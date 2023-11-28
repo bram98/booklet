@@ -1,0 +1,8 @@
+conda create -n booklet python=3.10 anaconda
+conda activate booklet
+conda install -c conda-forge unidecode, opencv
+pip install Office365-REST-Python-Client
+pip install office365
+pip install exifread
+pip install ImageMagic
+pip install Wand
