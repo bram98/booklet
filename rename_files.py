@@ -3,13 +3,14 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 import PIL
-import glob
+from  glob import glob
 import os
 import shutil
 from unidecode import unidecode
 from urllib.parse import urlparse, parse_qs, unquote
 import re
 from tqdm import tqdm
+import json
 
 #%%
 def init_folder(folder):
@@ -18,7 +19,7 @@ def init_folder(folder):
     '''
     os.makedirs(f'./response_data/{folder}',exist_ok=True)
     print(f'Created folder {folder}')
-    files = glob.glob(f'./response_data/{folder}/*')
+    files = glob(f'./response_data/{folder}/*')
     for file in files:
         os.remove(file)
 def inspect_names():
@@ -78,25 +79,97 @@ def separate_projdescription_and_references(proj_description_files, ref_regex):
     
     ref_file = unquote(ref_file)
     return proj_description_file, ref_file, has_references
+
+def create_errors_file():
+    print('Creating error file...')
+    error_dict = {}
+    for(i, person) in data.iterrows():
+        error_dict[i] = {
+                'name': unidecode(str(person['Full Name'])),
+                'email': person['E-mail'],
+                'portrait_errors': [],
+                'proj_description_errors': [],
+                'references_errors': [],
+                'name_errors': []
+            }
+    with open('error_data.json','w') as file:
+        json.dump(error_dict, file, indent=4)
+        
+def write_errors(err_type, id_list, err_list):
+    """Writes errors in data to error_data.json. This helps in creating an e-mail request for improving responses.
+
+    Parameters
+    ----------
+    err_type: str
+        error type. Must be one of 'portrait', 'proj_description', 'references' or 'name'
+    id_list: list(int)
+        list of all people with errors specified by their ID
+    err_list: list(str)
+        list of strings that will appear in literally in the final email. Same order as id_list
     
+    Returns
+    -------
+        None
+    """
+    if len(id_list)==0:
+        return
+    
+    with open('error_data.json') as file:
+        error_dict = json.load(file)
+        for (i, person_id) in enumerate(id_list):
+            
+            # list of errors for this person currently in error_dict
+            person_err_list = error_dict[str(person_id)][f'{err_type}_errors']
+            
+            # checks if error is already present (prevents writing same error twice)
+            if not any( err_list[i] in err for err in person_err_list ):
+                person_err_list.append(err_list[i])
+    
+    with open('error_data.json', 'w') as file:
+        json.dump(error_dict, file, indent=4)    
+
+def write_errors_in_name():
+    id_list = []
+    err_list = []
+    for (i, person) in data.iterrows():
+        if 'Mengwei' in person['Name']:
+            # id_list.append( int(person['ID']) )
+            err_list.append(
+                (f'There appears to be a typo in your name. Name from database: {person["Name"]},'
+                       f' Name provided by the form: {person["Full Name"]}. The name from the form will be used. '
+                       'Please modify your response with the correct name')
+                )
+    
+            
+    write_errors('name', id_list, err_list)    
+            # checks if error is already present (prevents writing same error twice)
+            # if not any( err_str in name_err for name_err in name_err_list ):
+            #     name_err_list.append(err_str)
+    
+#     with open('error_data.json', 'w') as file:
+#         json.dump(error_dict, file)
+#     print('Found 1 name error(s)')
+write_errors_in_name()
 #%%
 # Read in the data as a pandas dataframe
 data = pd.read_excel('responses.xlsx')
-
+data.set_index('ID', inplace=True)
 #%%
 MODIFY_FILES = True    # If false, will not modify files. Use for debugging
 
 # Create folders. Warning: files inside will be deleted
 if MODIFY_FILES:
+    create_errors_file()
     init_folder('portraits_renamed')
     init_folder('project_descriptions_renamed')
     init_folder('references_renamed')
     init_folder('figures_renamed')
+    
 
 print('Copying portraits, project descriptions, references and figures')
 # for(i, person) in tqdm(data.iterrows(), total=1):
-for(i, person) in tqdm(data.iterrows(), total=len(data)):
-    name = f"{person['ID']} {person['Full Name']}" 
+for(ID, person) in tqdm(data.iterrows(), total=len(data)):
+    name = f"{ID} {person['Full Name']}" 
     name = unidecode(name)
     
     '''
@@ -117,29 +190,39 @@ for(i, person) in tqdm(data.iterrows(), total=len(data)):
     if not 1 <= len(proj_description_files) <= 2:
         raise Exception(f'Found {len(proj_description_files)} files in project description. Expected 1 or 2.')
     reference_regex = re.compile('ref', flags=re.I)
+    
+    # sadly, one person did not upload a project description and I have to check for this
+    has_proj_description = False        
     has_references = False
     
     if len(proj_description_files)== 1:
-        
-        # no references
-        proj_description_file = proj_description_files[0]
-        has_references = False
+        if reference_regex.search(proj_description_files[0]) is None:
+            # no references
+            proj_description_file = proj_description_files[0]
+            has_proj_description = True
+            has_references = False
+        else: 
+            # no project description (sigh)
+            ref_file = proj_description_files[0]
+            has_proj_description = False
+            has_references = True
     elif len(proj_description_files) == 2:
         
         # references
         proj_description_file, ref_file, has_references = separate_projdescription_and_references(
             proj_description_files, 
             reference_regex)
-    
+        has_proj_description = True
 
     proj_description_file = unquote(proj_description_file)  
     
     if MODIFY_FILES:
-        copy_file('project_descriptions',
-                  'project_descriptions_renamed',
-                  proj_description_file, 
-                  'project_description',
-                  name)
+        if has_proj_description:
+            copy_file('project_descriptions',
+                      'project_descriptions_renamed',
+                      proj_description_file, 
+                      'project_description',
+                      name)
         if has_references:
             copy_file('project_descriptions',
                       'references_renamed',
