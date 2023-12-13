@@ -12,6 +12,8 @@ import re
 from tqdm import tqdm
 import json
 
+os.chdir(os.path.dirname(__file__))
+
 #%%
 def init_folder(folder):
     '''
@@ -142,14 +144,8 @@ def write_errors_in_name():
     
             
     write_errors('name', id_list, err_list)    
-            # checks if error is already present (prevents writing same error twice)
-            # if not any( err_str in name_err for name_err in name_err_list ):
-            #     name_err_list.append(err_str)
-    
-#     with open('error_data.json', 'w') as file:
-#         json.dump(error_dict, file)
-#     print('Found 1 name error(s)')
-write_errors_in_name()
+
+    print('Found 1 name error(s)')
 #%%
 # Read in the data as a pandas dataframe
 data = pd.read_excel('responses.xlsx')
@@ -245,7 +241,8 @@ for(ID, person) in tqdm(data.iterrows(), total=len(data)):
                   name)
 
 print('\nFinished copying portraits, project descriptions, references and figures')
-
+if MODIFY_FILES:
+    write_errors_in_name()
 
 
 # %%
