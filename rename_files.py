@@ -255,6 +255,11 @@ for(ID, person) in tqdm(data.iterrows(), total=len(data)):
                 ID,
                 f'./response_data/project_descriptions/{ref_file}'
             )
+        else:
+            write_errors('references',
+                         [ID],
+                         ['Reference excel file missing!']
+                         )
     '''
     Figures
     '''
