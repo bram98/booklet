@@ -1,7 +1,6 @@
 #%%
 import numpy as np
 import pandas as pd
-import matplotlib.pyplot as plt
 import PIL
 from  glob import glob
 import os
@@ -11,6 +10,7 @@ from urllib.parse import urlparse, parse_qs, unquote
 import re
 from tqdm import tqdm
 import json
+from pandas.api.types import is_integer_dtype
 
 os.chdir(os.path.dirname(__file__))
 
@@ -146,6 +146,32 @@ def write_errors_in_name():
     write_errors('name', id_list, err_list)    
 
     print('Found 1 name error(s)')
+
+def write_errors_references(person_id, excel_file):
+    id_list = []
+    err_list = []
+    df = pd.read_excel(excel_file)
+
+    if df.columns.size != 6:
+        id_list.append(person_id)
+        err_list.append('Please do not modify the number of columns in the references excel sheet.')
+        return  # Cannot process any further if the number of columns isn't even correct
+    if not is_integer_dtype(df.iloc[:,0]):
+        id_list.append(person_id)
+        err_list.append('The first column with reference numbers does not contain (only) numbers.')
+    if not is_integer_dtype(df.iloc[:,3]):
+        id_list.append(person_id)
+        err_list.append('The fourth column with journal volume/issue does not contain (only) numbers.')
+    if not is_integer_dtype(df.iloc[:,5]):
+        id_list.append(person_id)
+        err_list.append('The sixth column with publication year does not contain (only) numbers.')
+    for i in range(df.columns.size):
+        if np.any(df.iloc[:,i].isna()):
+            id_list.append(person_id)
+            err_list.append(f'Column {i+1} contains some empty cells')
+
+    write_errors('references', id_list, err_list)
+
 #%%
 # Read in the data as a pandas dataframe
 data = pd.read_excel('responses.xlsx')
@@ -225,6 +251,10 @@ for(ID, person) in tqdm(data.iterrows(), total=len(data)):
                       ref_file, 
                       'references',
                       name)
+            write_errors_references(
+                ID,
+                f'./response_data/project_descriptions/{ref_file}'
+            )
     '''
     Figures
     '''
