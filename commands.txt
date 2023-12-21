@@ -1,6 +1,7 @@
 conda create -n booklet python=3.10 anaconda
 conda activate booklet
 conda install -c conda-forge unidecode, opencv
+conda install -c anaconda pywin32
 pip install Office365-REST-Python-Client
 pip install office365
 pip install exifread
