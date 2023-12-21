@@ -11,8 +11,7 @@ from urllib.parse import urlparse, parse_qs, unquote
 import re
 from tqdm import tqdm
 import json
-
-os.chdir(os.path.dirname(__file__))
+from fuzzywuzzy import fuzz
 
 #%%
 def init_folder(folder):
@@ -90,20 +89,24 @@ def create_errors_file():
                 'name': unidecode(str(person['Full Name'])),
                 'email': person['E-mail'],
                 'portrait_errors': [],
+                'figure_errors': [],
                 'proj_description_errors': [],
                 'references_errors': [],
                 'name_errors': []
             }
     with open('error_data.json','w') as file:
         json.dump(error_dict, file, indent=4)
-        
+
+def fuzzy_equal(str1, str2):
+    return fuzz.ratio(str1, str2) > 80
+
 def write_errors(err_type, id_list, err_list):
     """Writes errors in data to error_data.json. This helps in creating an e-mail request for improving responses.
 
     Parameters
     ----------
     err_type: str
-        error type. Must be one of 'portrait', 'proj_description', 'references' or 'name'
+        error type. Must be one of 'portrait', 'figure', proj_description', 'references' or 'name'
     id_list: list(int)
         list of all people with errors specified by their ID
     err_list: list(str)
@@ -115,6 +118,10 @@ def write_errors(err_type, id_list, err_list):
     """
     if len(id_list)==0:
         return
+    if not err_type in ['portrait', 'proj_description', 'figure', 'references', 'name']:
+        raise Exception(("Error type must be one of 'portrait', 'proj_description', 'figure', 'references' or 'name'. "
+                         f"Not '{err_type}'"
+                         ))
     
     with open('error_data.json') as file:
         error_dict = json.load(file)
@@ -124,7 +131,7 @@ def write_errors(err_type, id_list, err_list):
             person_err_list = error_dict[str(person_id)][f'{err_type}_errors']
             
             # checks if error is already present (prevents writing same error twice)
-            if not any( err_list[i] in err for err in person_err_list ):
+            if not any( fuzzy_equal(err_list[i], old_err) for old_err in person_err_list ):
                 person_err_list.append(err_list[i])
     
     with open('error_data.json', 'w') as file:
@@ -142,10 +149,8 @@ def write_errors_in_name():
                        'Please modify your response with the correct name')
                 )
     
-            
     write_errors('name', id_list, err_list)    
 
-    print('Found 1 name error(s)')
 #%%
 # Read in the data as a pandas dataframe
 data = pd.read_excel('responses.xlsx')
@@ -161,9 +166,15 @@ if MODIFY_FILES:
     init_folder('references_renamed')
     init_folder('figures_renamed')
     
+    
+
+    
 
 print('Copying portraits, project descriptions, references and figures')
 # for(i, person) in tqdm(data.iterrows(), total=1):
+
+no_proj_description_ids = []
+no_proj_description_errors = []
 for(ID, person) in tqdm(data.iterrows(), total=len(data)):
     name = f"{ID} {person['Full Name']}" 
     name = unidecode(name)
@@ -189,6 +200,8 @@ for(ID, person) in tqdm(data.iterrows(), total=len(data)):
     
     # sadly, one person did not upload a project description and I have to check for this
     has_proj_description = False        
+    
+    
     has_references = False
     
     if len(proj_description_files)== 1:
@@ -202,6 +215,9 @@ for(ID, person) in tqdm(data.iterrows(), total=len(data)):
             ref_file = proj_description_files[0]
             has_proj_description = False
             has_references = True
+            no_proj_description_ids.append(ID)
+            no_proj_description_errors.append(('You have not provided a project description. '
+                                               'Please provide a project description as specified on the form.'))
     elif len(proj_description_files) == 2:
         
         # references
@@ -239,10 +255,11 @@ for(ID, person) in tqdm(data.iterrows(), total=len(data)):
                   fig_file, 
                   'figure',
                   name)
-
-print('\nFinished copying portraits, project descriptions, references and figures')
 if MODIFY_FILES:
     write_errors_in_name()
+    write_errors('proj_description', no_proj_description_ids, no_proj_description_errors)
+print('\nFinished copying portraits, project descriptions, references and figures')
+
 
 
 # %%
