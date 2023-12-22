@@ -7,3 +7,4 @@ pip install office365
 pip install exifread
 pip install ImageMagic
 pip install Wand
+pip install -U wdbibtex
