@@ -137,20 +137,22 @@ def write_errors(err_type, id_list, err_list):
                 person_err_list.append(err_list[i])
     
     with open('error_data.json', 'w') as file:
-        json.dump(error_dict, file, indent=4)    
+        json.dump(error_dict, file, indent=4)
+    
+    print(f'Found {len(err_list)} error(s) of type {err_type}')
 
 def write_errors_in_name():
     id_list = []
     err_list = []
-    for (i, person) in data.iterrows():
+    for (ID, person) in data.iterrows():
         if 'Mengwei' in person['Name']:
-            # id_list.append( int(person['ID']) )
+            id_list.append( int(ID) )
             err_list.append(
                 (f'There appears to be a typo in your name. Name from database: {person["Name"]},'
                        f' Name provided by the form: {person["Full Name"]}. The name from the form will be used. '
                        'Please modify your response with the correct name')
                 )
-    
+            
     write_errors('name', id_list, err_list)    
 
 #%%
@@ -169,9 +171,6 @@ if MODIFY_FILES:
     init_folder('figures_renamed')
     
     
-
-    
-
 print('Copying portraits, project descriptions, references and figures')
 # for(i, person) in tqdm(data.iterrows(), total=1):
 
@@ -257,6 +256,8 @@ for(ID, person) in tqdm(data.iterrows(), total=len(data)):
                   fig_file, 
                   'figure',
                   name)
+            
+print()
 if MODIFY_FILES:
     write_errors_in_name()
     write_errors('proj_description', no_proj_description_ids, no_proj_description_errors)
