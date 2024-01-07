@@ -13,6 +13,8 @@ from tqdm import tqdm
 import json
 from fuzzywuzzy import fuzz
 
+os.chdir(os.path.dirname(__file__))
+
 #%%
 def init_folder(folder):
     '''
