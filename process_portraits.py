@@ -86,7 +86,7 @@ src_folder = './response_data/portraits_renamed/'
 dest_folder = './response_data/portraits_processed/'
 portrait_paths = glob(src_folder + '*')
 
-MODIFY_FILES = False 
+MODIFY_FILES = True 
 
 if MODIFY_FILES:
     init_folder('portraits_processed')
@@ -99,8 +99,8 @@ resolution_errs = []
 aspect_ratios_ids = []
 aspect_ratios_errs = []
 print('Processing portraits...')
-# for portrait_path in tqdm(portrait_paths):
-for portrait_path in portrait_paths:
+for portrait_path in tqdm(portrait_paths):
+# for portrait_path in portrait_paths:
     path, extension = os.path.splitext(portrait_path)
     
     if extension == '.ai':
@@ -138,11 +138,14 @@ for portrait_path in portrait_paths:
     except Exception as e:
         print(f'Error trying to open {portrait_path}')
         raise e
-        
+
+print()  
 if MODIFY_FILES:
+    write_errors('portrait', resolution_ids, resolution_errs)
     write_errors('portrait', aspect_ratios_ids, aspect_ratios_errs)
 
 print('\nDone processing portraits...')
+print( f'Detected {len(resolution_ids)} photos with low resolution.')
 print( f'Detected {len(aspect_ratios_ids)} wrong portrait aspect ratios.')
 print(f'Converted {ai_counter} .ai file(s) to .jpg')
 # %%
