@@ -35,9 +35,28 @@ def inspect_file_types():
         if ext != '.docx':
             print(Path(filename).name)
 
+def write_file_type_errors():
+    filenames = glob('response_data/project_descriptions_renamed/*')
+    filename_ids = []
+    filename_errs = []
+    for filename in filenames:
+        file_path = Path(filename)
+        ext = file_path.suffix
+        if ext != '.docx':
+            filename_ids.append( int( parse_id( file_path.name ) ) )
+            filename_errs.append( (f'The file type of your project description '
+                                   f'is not supported. Your file type: {ext}. '
+                                   f'Supported: .doc or .docx.'
+                                   ))
+    print(f'Detected {len(filename_errs)} wrong projection description file types.')
+    write_errors('proj_description', filename_ids, filename_errs)
+    # write_errors('figure', caption_ids, caption_errs)
 # convert_doc_to_docx_windows()
 # inspect_file_types()
 
+#%%
+convert_doc_to_docx_windows()
+write_file_type_errors()
 #%%
 filenames = glob('response_data/project_descriptions_renamed/*.docx')
 
