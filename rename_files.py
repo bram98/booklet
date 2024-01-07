@@ -139,7 +139,22 @@ def write_errors(err_type, id_list, err_list):
     with open('error_data.json', 'w') as file:
         json.dump(error_dict, file, indent=4)
     
-    print(f'Found {len(err_list)} error(s) of type {err_type}')
+    print(f'Wrote {len(err_list)} error(s) of type {err_type} to error_data.json')
+
+def clear_errors(err_type: str):
+    if not err_type in ['portrait', 'proj_description', 'figure', 'references', 'name']:
+        raise Exception(("Error type must be one of 'portrait', 'proj_description', 'figure', 'references' or 'name'. "
+                         f"Not '{err_type}'"
+                         ))
+        
+    with open('error_data.json') as file:
+        error_dict = json.load(file)
+
+    for key in error_dict.keys():
+        error_dict[key][f'{err_type}_errors'] = []
+    
+    with open('error_data.json', 'w') as file:
+        json.dump(error_dict, file, indent=4)
 
 def write_errors_in_name():
     id_list = []
