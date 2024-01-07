@@ -1,6 +1,7 @@
 conda create -n booklet python=3.10 anaconda
 conda activate booklet
-conda install -c conda-forge unidecode, opencv
+conda install -c conda-forge unidecode, opencv, pdf2image
+conda install conda-forge::python-docx
 conda install -c anaconda pywin32
 #conda install conda-forge::certifi
 conda install conda-forge::fuzzywuzzy
@@ -11,3 +12,4 @@ pip install ImageMagic
 pip install Wand
 pip install -U wdbibtex
 pip install pip-system-certs
+pip install doc2docx
