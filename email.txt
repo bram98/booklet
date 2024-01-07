@@ -1,0 +1,16 @@
+Dear PhDs and postdocs,
+
+We have been busy processing all the responses for this year's Debye and ISCC Postgraduate Research Booklet (<a href='https://www.uu.nl/sites/default/files/2021%20Debye%20postgraduate%20research%20projects.pdf'>previous version found here</a>) and we still have some points that require further action from you. Part of this mail is addressed to everyone and some is addressed to specific people based on your response. Some of the specific feedback might seem nitpicky, but we are working with a small team and this work can quickly add up, so we hope you understand. Here is the things we ask of you:
+
+<b>For everyone</b>
+1. We added the questions "Project Title" and "Project Type" (PhD or postdoc) to the form. Go back to the form <a href='https://forms.office.com/e/aSQiXr9iYC'>https://forms.office.com/e/aSQiXr9iYC</a> and fill these in.
+2. (optional) We will now be accepting BibTeX files for references, in addition to the previous method using Excel. If you are happy with the Excel method, no action is required.
+
+<b>For you</b>
+We did not detect any issues with your response. 
+This error message was generated automatically. If you think this should not apply to you, please send an e-mail to b.verreussel@uu.nl
+
+Best regards,
+On behalf of the DAC,
+
+Bram Verreussel
