@@ -1,0 +1,16 @@
+Dear PhDs and postdocs,
+
+We have been busy processing all the responses for this year's Debye and ISCC Postgraduate Research Booklet (<a href='https://www.uu.nl/sites/default/files/2021%20Debye%20postgraduate%20research%20projects.pdf'>previous version found here</a>) and we still have some points that require further action from you. Part of these points are for everyone and part of these points are issues with individual responses. Some of the individual feedback might seem nitpicky, but we are working with a small team and this work can quickly add up, so we hope you understand. Here is the things we ask of you:
+
+<b>For everyone</b>
+1. We added the questions "Project Title" and "Project Type" (PhD or postdoc) to the form. Go back to the form <a href='https://forms.office.com/e/aSQiXr9iYC'>https://forms.office.com/e/aSQiXr9iYC</a> and fill these in.
+2. The project description should be a word document containing only the project description as 'flat text'. This means no title, no references, no figures etc. Here flat text includes normal text, italics, bold, subscript and superscript. <b>If your project description is not of this form, please update it</b>. We apologize for any confusion on this point.
+3. (optional) We will now be accepting BibTeX files for references, in addition to the previous method using Excel. To use it, use \cite{ref1} in your project description and 'ref1' as the name of the BibTeX entry, like you would in a LaTeX file. <b>If you are happy with the Excel method, no action is required</b>.
+
+<b>For you</b>
+The personal feedback will be sent in an automatically generated separate mail, shortly after this one. It will come from a gmail account, so be sure to check your solismail inbox and maybe your spam folder. Even if you did everything correctly, you will still get a mail.
+
+Best regards,
+On behalf of the DAC,
+
+Bram Verreussel

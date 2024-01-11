@@ -33,7 +33,7 @@ def get_id(filename):
     return int(re.search('(\d+)', filename)[0])
 
 def write_wrong_extensions_errors_and_return_valid():
-    allowed_extensions = ['.jpg', '.pdf', '.ai', '.svg', '.tiff', '.psd']
+    allowed_extensions = ['.jpg', '.pdf', '.ai', '.svg', '.tiff', '.psd', '.png']
     allowed_extensions_str = []
     
     extension_ids = []
@@ -58,10 +58,10 @@ def write_wrong_extensions_errors_and_return_valid():
                 f'Your file type: {ext}. Allowed file types: {" ".join(allowed_extensions)}.'
                 ))
     
-    print(f'Found {len(extension_ids)} wrong extensions')
+    print(f'Detected {len(extension_ids)} wrong extensions')
     if MODIFY_FILES:
-        # write_errors('figure',extension_ids, extension_errors)
-        pass
+        write_errors('figure',extension_ids, extension_errors)
+        # pass
     return valid_figures
 
 def write_caption_errors():
@@ -84,14 +84,16 @@ def write_caption_errors():
     caption_errs = []
     for(ID, person) in data.iterrows():
         if fuzzy_str_in_list( person['Full Name'], bad_people ) > 90 :
-            print(person['Full Name'], fuzzy_str_in_list( person['Full Name'], bad_people ))
+            # print(person['Full Name'], fuzzy_str_in_list( person['Full Name'], bad_people ))
+            caption_ids.append(ID)
             caption_errs.append( ('Caption found inside your figure. Please remove the caption from your figure and '
                                   'add it separately as text in the "caption" option in the forms. This will allow us to '
                                   'provide a uniform style throughout the booklet.') )
-    print(len(bad_people), caption_errs[0])
-    # write_errors('figure', id_list, err_list)
+    # print(len(bad_people), caption_errs[0])
+    write_errors('figure', caption_ids, caption_errs)
+    print(f'Detected {len(caption_ids)} captions inside figures.')
 
-write_caption_errors()
+
 
 #%%
 
@@ -120,12 +122,12 @@ for figure_path in tqdm(figure_paths_sub):
     dest_path = Path(dest_folder) / path.name
     shutil.copyfile(figure_path, dest_path)
     
-    if path.suffix.lower() in ['.ai', '.psd', '.svg']:
-        print(path.name)
-        shutil.copyfile(
-            dest_path, 
-            dest_path.parent/ ( 'TEMP ' + path.stem + '.pdf' )
-            )
+    # if path.suffix.lower() in ['.ai', '.psd', '.svg']:
+    #     print(path.name)
+    #     shutil.copyfile(
+    #         dest_path, 
+    #         dest_path.parent/ ( 'TEMP ' + path.stem + '.pdf' )
+    #         )
     # if extension == '.ai':
     #     # convert .ai files to .jpg
     #     if MODIFY_FILES:
@@ -134,4 +136,7 @@ for figure_path in tqdm(figure_paths_sub):
             
     #     ai_counter += 1
 # for 
+print()
+if MODIFY_FILES:
+    write_caption_errors()
     

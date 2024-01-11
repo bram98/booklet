@@ -13,6 +13,8 @@ from tqdm import tqdm
 import json
 from fuzzywuzzy import fuzz
 
+os.chdir(os.path.dirname(__file__))
+
 #%%
 def init_folder(folder):
     '''
@@ -135,20 +137,37 @@ def write_errors(err_type, id_list, err_list):
                 person_err_list.append(err_list[i])
     
     with open('error_data.json', 'w') as file:
-        json.dump(error_dict, file, indent=4)    
+        json.dump(error_dict, file, indent=4)
+    
+    print(f'Wrote {len(err_list)} error(s) of type {err_type} to error_data.json')
+
+def clear_errors(err_type: str):
+    if not err_type in ['portrait', 'proj_description', 'figure', 'references', 'name']:
+        raise Exception(("Error type must be one of 'portrait', 'proj_description', 'figure', 'references' or 'name'. "
+                         f"Not '{err_type}'"
+                         ))
+        
+    with open('error_data.json') as file:
+        error_dict = json.load(file)
+
+    for key in error_dict.keys():
+        error_dict[key][f'{err_type}_errors'] = []
+    
+    with open('error_data.json', 'w') as file:
+        json.dump(error_dict, file, indent=4)
 
 def write_errors_in_name():
     id_list = []
     err_list = []
-    for (i, person) in data.iterrows():
+    for (ID, person) in data.iterrows():
         if 'Mengwei' in person['Name']:
-            # id_list.append( int(person['ID']) )
+            id_list.append( int(ID) )
             err_list.append(
                 (f'There appears to be a typo in your name. Name from database: {person["Name"]},'
                        f' Name provided by the form: {person["Full Name"]}. The name from the form will be used. '
                        'Please modify your response with the correct name')
                 )
-    
+            
     write_errors('name', id_list, err_list)    
 
 #%%
@@ -167,9 +186,6 @@ if MODIFY_FILES:
     init_folder('figures_renamed')
     
     
-
-    
-
 print('Copying portraits, project descriptions, references and figures')
 # for(i, person) in tqdm(data.iterrows(), total=1):
 
@@ -255,6 +271,8 @@ for(ID, person) in tqdm(data.iterrows(), total=len(data)):
                   fig_file, 
                   'figure',
                   name)
+            
+print()
 if MODIFY_FILES:
     write_errors_in_name()
     write_errors('proj_description', no_proj_description_ids, no_proj_description_errors)

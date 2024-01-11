@@ -35,13 +35,36 @@ def inspect_file_types():
         if ext != '.docx':
             print(Path(filename).name)
 
+def write_file_type_errors():
+    filenames = glob('response_data/project_descriptions_renamed/*')
+    filename_ids = []
+    filename_errs = []
+    for filename in filenames:
+        file_path = Path(filename)
+        ext = file_path.suffix
+        if ext != '.docx':
+            filename_ids.append( int( parse_id( file_path.name ) ) )
+            filename_errs.append( (f'The file type of your project description '
+                                   f'is not supported. Your file type: {ext}. '
+                                   f'Supported: .doc or .docx.'
+                                   ))
+    print(f'Detected {len(filename_errs)} wrong projection description file types.')
+    write_errors('proj_description', filename_ids, filename_errs)
+    # write_errors('figure', caption_ids, caption_errs)
 # convert_doc_to_docx_windows()
 # inspect_file_types()
 def get_id(filename):
     return int(re.search('(\d+)', filename)[0])
 #%%
+<<<<<<< HEAD
 from glob import escape
 filenames = glob(r'response_data/project_descriptions_renamed/*.docx')
+=======
+convert_doc_to_docx_windows()
+write_file_type_errors()
+#%%
+filenames = glob('response_data/project_descriptions_renamed/*.docx')
+>>>>>>> 54bf9342f0b7d19c9251012ff6c7807a0a539ee9
 
 # reference_regex = re.compile(r'(^\[\d\])|references:?', flags=re.M|re.I)
 reference_regex = re.compile(r'(\[.*?\d.*?\])', flags=re.M|re.I)
