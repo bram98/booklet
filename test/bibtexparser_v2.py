@@ -7,6 +7,7 @@ import pybtex.plugin
 import codecs
 import latexcodec
 import os
+import re
 
 from docx import Document
 from htmldocx import HtmlToDocx
@@ -19,10 +20,63 @@ from pybtex.richtext import Symbol, Text, Tag
 from pybtex.style.formatting import BaseStyle, toplevel
 from pybtex.style.template import (
     field, first_of, href, join, names, optional, optional_field, sentence,
-    tag, together, words
+    tag, together, words,
+    _format_data, _format_list,  Node, node, FieldIsMissing
 )
-from pybtex.style.formatting.unsrt import Style as UnsrtStyle 
+from pybtex.style.formatting.unsrt import (Style as UnsrtStyle,
+                                           dashify, pages, date
+                                           )
+
+# def dashify(text):
+#     dash_re = re.compile(r'-+')
+#     return Text(Symbol('ndash')).join(text.split(dash_re))
+
+# pages = field('pages', apply_func=dashify)
+
+
+@node
+def strict_firstof(children, context):
+    """Return first nonempty child. If no entry is found, raise error"""
+    # print(f'children: {children}')
+    # print(f'context: {context}')
+    # print(f'data: {data}')
+    # print( next(_format_list(children[0], context) ) )
+    
+    for child_node in children:
+        print(optional [child_node] )
+        child = optional [ child_node ]
+        print(_format_data(child, context) )
+        formatted_child = _format_data(child, context)
+        if formatted_child:
+            return formatted_child
+    
+    raise FieldIsMissing('', context['entry'])
+
 class MyStyle(UnsrtStyle):
+    def get_article_template(self, e):
+        volume_and_pages = first_of [
+            # volume and pages, with optional issue number
+            optional [
+                join [
+                    optional [ tag('em') [field('volume')] ],
+                    optional['(', field('number'),')'],
+                    ':', pages
+                ],
+            ],
+            # pages only
+            words ['pages', pages],
+        ]
+        template = toplevel [
+            self.format_names('author'),
+            self.format_title(e, 'title'),
+            sentence [
+                tag('em') [field('journal')],
+                optional[ volume_and_pages ],
+                date],
+            sentence [ optional_field('note') ],
+            self.format_web_refs(e),
+        ]
+        return template
     # def format_article(self, entry_):
     #     from pybtex.textutils import abbreviate as abbr
     #     entry = entry_['entry']
