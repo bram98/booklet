@@ -27,6 +27,7 @@ def copy_file(src_folder, dest_folder, old_filename, new_filename, name):
         dest_file_name = f'./response_data/{dest_folder}/{new_filename} {name}{file_extension}'
         
         shutil.copy(src_file_name, dest_file_name)
+        return dest_file_name
     except Exception as e:
         print(f'Error! Name:{name}\t File name:{old_filename}')
         raise e

@@ -10,11 +10,13 @@ from unidecode import unidecode
 from urllib.parse import urlparse, parse_qs, unquote
 import re
 from tqdm import tqdm
-import json
 from pandas.api.types import is_integer_dtype
 from pandas.api.types import is_any_real_numeric_dtype
 from pathlib import Path
+from docx import Document
+
 from helper_functions import init_folder, parse_id, copy_file
+from bibtexparser_v3 import make_bibliography
 
 os.chdir(os.path.dirname(__file__))
 #%%
@@ -82,22 +84,62 @@ src_folder = './response_data/references_renamed/'
 dest_folder = './response_data/references_processed/'
 reference_paths = glob(src_folder + '*')
 
-MODIFY_FILES = False
+MODIFY_FILES = True
 
 if MODIFY_FILES:
     init_folder('references_processed')
-
-for reference_path in reference_paths:
+    
+'''
+Convert excel to .bib
+'''
+for reference_path in tqdm(reference_paths[:]):
     ref_path = Path(reference_path)
     ref_name = ref_path.stem
-    ID = parse_id(ref_name)
-    
-    copy_file(
-        src_folder=src_folder, 
-        dest_folder=dest_folder,
-        
+    ref_path = copy_file(
+        src_folder='references_renamed', 
+        dest_folder='references_processed',
+        old_filename=ref_path.name,
+        new_filename='references',
+        name = ref_name[11:]
         )
-    # write_errors_references(
-    #         ID,
-    #         reference_path
-    #     )
+    ref_path = Path(ref_path)
+    
+    try:
+        xlsx2bib(ref_path.absolute())
+    except Exception as e:
+        print(f'[{ref_name[11:]}] {repr(e)}')
+        
+#%%
+bib_paths = glob(dest_folder + '*.bib')
+proj_description_paths = glob('./response_data/project_descriptions_renamed/*')
+
+
+cite_sb_regex = re.compile(r'(\[.*?\d.*?\])') # Matches [1] and [ 1 ]
+cite_sb_regex2 = re.compile(r'\[.*?(\d+)\D*?(\d+)?\]') # Matches [1], [1, 2] and [8-10]
+cite_cite_regex = re.compile(r'\\cite')
+for bib_path in bib_paths:
+    bib_path = Path(bib_path)
+    person = bib_path.stem[11:]
+
+    proj_descriptions = list(filter(lambda file: person in file, proj_description_paths ))
+    
+    if len(proj_descriptions) != 1:
+        raise Exception(f'[{person}] Found {len(proj_descriptions)} project descriptions!')
+        
+    proj_description = proj_descriptions[0]
+    
+    doc = Document(proj_description)
+    # print( [len(p.text) for p in doc.paragraphs] )
+    paras = ''.join( [p.text for p in doc.paragraphs] )
+    
+    # Find all references and then select the largest one.
+    numbers = cite_sb_regex2.findall(paras)
+    numbers = np.array(numbers, dtype=str).flatten()
+    numbers = np.array(list(filter(lambda x: x, numbers)), dtype=int)
+    if len(numbers) == 0:
+        print(person)
+    else:
+        largest_ref = np.max(numbers)
+
+
+

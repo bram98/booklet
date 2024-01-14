@@ -96,14 +96,16 @@ def write_errors_in_name():
 # Read in the data as a pandas dataframe
 data = pd.read_excel('responses.xlsx')
 data.set_index('ID', inplace=True)
+
+
 #%%
-MODIFY_FILES = False    # If false, will not modify files. Use for debugging
+MODIFY_FILES = True    # If false, will not modify files. Use for debugging
 
 # Create folders. Warning: files inside will be deleted
 if MODIFY_FILES:
     create_errors_file()
     init_folder('portraits_renamed')
-    init_folder('project_descriptions_renamed')
+    # init_folder('project_descriptions_renamed')
     init_folder('references_renamed')
     init_folder('figures_renamed')
     
@@ -132,51 +134,71 @@ for(ID, person) in tqdm(data.iterrows(), total=len(data)):
     proj_description_files = proj_description_files.split(';')
     proj_description_files = [extract_file_solis_url(url) for url in proj_description_files]
         
-    if not 1 <= len(proj_description_files) <= 2:
-        raise Exception(f'[{name}] Found {len(proj_description_files)} files in project description. Expected 1 or 2.')
-    reference_regex = re.compile('ref', flags=re.I)
+    # if not 1 <= len(proj_description_files) <= 2:
+    #     raise Exception(f'[{name}] Found {len(proj_description_files)} files in project description. Expected 1 or 2.')
+    reference_regex = re.compile('(ref|citation)', flags=re.I)
     
-    # sadly, one person did not upload a project description and I have to check for this
-    has_proj_description = False        
-    
-    
-    has_references = False
-    
-    if len(proj_description_files)== 1:
-        if reference_regex.search(proj_description_files[0]) is None:
-            # no references
-            proj_description_file = proj_description_files[0]
-            has_proj_description = True
-            has_references = False
-        else: 
-            # no project description (sigh)
-            ref_file = proj_description_files[0]
-            has_proj_description = False
-            has_references = True
-            no_proj_description_ids.append(ID)
-            no_proj_description_errors.append(('You have not provided a project description. '
-                                               'Please provide a project description as specified on the form.'))
-    elif len(proj_description_files) == 2:
-        
-        # references
-        proj_description_file, ref_file, has_references = separate_projdescription_and_references(
-            proj_description_files, 
-            reference_regex)
+    reference_list = list(filter(reference_regex.search, proj_description_files))
+    proj_description_list = [file for file in proj_description_files if not file in reference_list]
+    # print(list(proj_description_list))
+    # print(list(reference_list))
+    # print(f'{len(list(proj_description_list))} {len(list(reference_list))}')
+    if(len(proj_description_list)>=1):
         has_proj_description = True
+        proj_description_file = proj_description_list[-1]
+    else:
+        # sadly, one person did not upload a project description and I have to check for this
+        has_proj_description = False 
+        no_proj_description_ids.append(ID)
+        no_proj_description_errors.append(('You have not provided a project description. '
+                                           'Please provide a project description as specified on the form.'))
+
+    if len(reference_list) >= 1:
+        has_references = True
+        reference_file = reference_list[-1]
+    else:
+        has_references = False
+        reference_file = ''
+        
+    
+    # print(proj_description_file, '\n', reference_file, '\n')
+    
+    # if len(proj_description_files)== 1:
+    #     if reference_regex.search(proj_description_files[0]) is None:
+    #         # no references
+    #         proj_description_file = proj_description_files[0]
+    #         has_proj_description = True
+    #         has_references = False
+    #     else: 
+    #         # no project description (sigh)
+    #         ref_file = proj_description_files[0]
+    #         has_proj_description = False
+    #         has_references = True
+    #         no_proj_description_ids.append(ID)
+    #         no_proj_description_errors.append(('You have not provided a project description. '
+    #                                            'Please provide a project description as specified on the form.'))
+    # elif len(proj_description_files) == 2:
+        
+    #     # references
+    #     proj_description_file, ref_file, has_references = separate_projdescription_and_references(
+    #         proj_description_files, 
+    #         reference_regex)
+    #     has_proj_description = True
 
     proj_description_file = unquote(proj_description_file)  
     
     if MODIFY_FILES:
         if has_proj_description:
-            copy_file('project_descriptions',
-                      'project_descriptions_renamed',
-                      proj_description_file, 
-                      'project_description',
-                      name)
+            pass
+            # copy_file('project_descriptions',
+            #           'project_descriptions_renamed',
+            #           proj_description_file, 
+            #           'project_description',
+            #           name)
         if has_references:
             copy_file('project_descriptions',
                       'references_renamed',
-                      ref_file, 
+                      reference_file, 
                       'references',
                       name)
     '''
