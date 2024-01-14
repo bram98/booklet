@@ -1,17 +1,22 @@
 #%%
 import numpy as np
 import pandas as pd
-import PIL
+# import PIL
 from  glob import glob
 import os
-import shutil
+from os.path import splitext
+# import shutil
 from unidecode import unidecode
 from urllib.parse import urlparse, parse_qs, unquote
 import re
 from tqdm import tqdm
 import json
 from pandas.api.types import is_integer_dtype
+from pandas.api.types import is_any_real_numeric_dtype
+from pathlib import Path
+from helper_functions import init_folder, parse_id, copy_file
 
+os.chdir(os.path.dirname(__file__))
 #%%
 # Read in the data as a pandas dataframe
 data = pd.read_excel('responses.xlsx')
@@ -42,19 +47,57 @@ def write_errors_references(person_id, excel_file):
             err_list.append(f'Reference error. Column {i+1} contains some empty cells')
 
     write_errors('references', id_list, err_list)
-    
+#%%
+
+
+
+def check_page_range(pr):
+    if is_any_real_numeric_dtype(type(pr)) and np.isnan(pr):
+        return False
+    else:
+        return True
+
+
+def xlsx2bib(xlsx_file):
+    # Replace file extension
+    base_name = splitext(xlsx_file)[0]
+    bib_file = base_name + '.bib'
+
+    # Parse excel file
+    df = pd.read_excel(xlsx_file).sort_values(by='Number')
+
+    # For each row in the xlsx file, generated an entry in the bib file
+    with open(bib_file, 'w') as fh:
+        for i, row in df.iterrows():
+            fh.write(f"""@article{{ref{row['Number']},
+            author={{{row['First author'].replace('&', chr(92)+'&').strip()}}},
+            journal={{{row['Journal'].strip()}}},
+            number={{{int(row['Issue']) if not np.isnan(row['Issue']) else ''}}},
+            pages={{{str(row['page range']).replace('-', '--').strip() if check_page_range(row['page range']) else ''}}},
+            year={{{row['year']}}},
+            }}
+            """)
 #%%
 src_folder = './response_data/references_renamed/'
+dest_folder = './response_data/references_processed/'
 reference_paths = glob(src_folder + '*')
 
+MODIFY_FILES = False
+
+if MODIFY_FILES:
+    init_folder('references_processed')
+
 for reference_path in reference_paths:
-    ID = parse_id(reference_path)
-    write_errors_references(
-            ID,
-            reference_path
+    ref_path = Path(reference_path)
+    ref_name = ref_path.stem
+    ID = parse_id(ref_name)
+    
+    copy_file(
+        src_folder=src_folder, 
+        dest_folder=dest_folder,
+        
         )
-# for(ID, person) in tqdm(data.iterrows(), total=len(data)):
-#     write_errors_references(
-#         ID,
-#         f'./response_data/project_descriptions/{ref_file}'
-#     )
+    # write_errors_references(
+    #         ID,
+    #         reference_path
+    #     )

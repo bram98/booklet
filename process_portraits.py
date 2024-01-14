@@ -11,6 +11,7 @@ from pdf2image import convert_from_path as pdf_read
 from tqdm import tqdm
 import re
 import numpy as np
+from helper_functions import parse_id
 
 #%%
 def handle_ai_file(file_path:str):
@@ -66,12 +67,6 @@ def check_resolution(img: wImg) -> (bool, str):
                          ))
     return (True, '')
 
-def parse_id(filename: str) -> int:
-    '''
-    Return id from filename. Assumes the ID are the only numbers in the string.
-    '''
-    only_numbers = re.compile(r'\d+')
-    return int(only_numbers.search(filename)[0])
 
 def rescale_dpi(img: wImg):
     # if img.units != 'pixelsperinch':
