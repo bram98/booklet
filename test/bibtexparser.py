@@ -86,7 +86,7 @@ from pybtex.style.formatting.unsrt import Style as UnsrtStyle
 
 parser = bibtex.Parser()
 bib_data = parser.parse_file('ref.bib')
-entry = bib_data.entries['ref2']
+entry = bib_data.entries['ref3']
 
 his_style = UnsrtStyle()
 context = {
@@ -97,7 +97,9 @@ context = {
 
 # his_style.get_article_template(entry).format_data(context)
 print(his_style.get_article_template(entry).format_data(context).render(backend))
+pybtex.style.names.plain.NameStyle
 
+his_style.format_name
 # join [
 #     field('volume'),
 #     optional ['(', field('number'),')'],
