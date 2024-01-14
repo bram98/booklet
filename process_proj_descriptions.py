@@ -56,15 +56,15 @@ def write_file_type_errors():
 def get_id(filename):
     return int(re.search('(\d+)', filename)[0])
 #%%
-<<<<<<< HEAD
-from glob import escape
+
+# from glob import escape
 filenames = glob(r'response_data/project_descriptions_renamed/*.docx')
-=======
+
 convert_doc_to_docx_windows()
 write_file_type_errors()
 #%%
 filenames = glob('response_data/project_descriptions_renamed/*.docx')
->>>>>>> 54bf9342f0b7d19c9251012ff6c7807a0a539ee9
+
 
 # reference_regex = re.compile(r'(^\[\d\])|references:?', flags=re.M|re.I)
 reference_regex = re.compile(r'(\[.*?\d.*?\])', flags=re.M|re.I)
