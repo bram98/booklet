@@ -15,7 +15,8 @@ from pandas.api.types import is_any_real_numeric_dtype
 from pathlib import Path
 from docx import Document
 
-from helper_functions import init_folder, parse_id, copy_file, fuzzy_equal
+from helper_functions import init_folder, parse_id, copy_file, fuzzy_equal, replace_accents
+import bibtexparser_v3
 from bibtexparser_v3 import make_bibliography
 
 os.chdir(os.path.dirname(__file__))
@@ -89,17 +90,24 @@ def xlsx2bib(xlsx_file: str):
     with open(bib_file, 'w') as fh:
         for i, row in df.iterrows():
             try:
+                author = replace_accents(row['First author'].replace('&', chr(92)+'&').strip())
+                journal = replace_accents(try_convert(row, 'Journal', str).strip())
+                issue = try_convert(row, 'Issue', int)
+                pages =replace_accents( try_convert(row, 'page range', str).replace(emdash, '-').replace('-', '--').strip() )
+                
                 fh.write(f"""@article{{ref{row['Number']},
-        author={{{row['First author'].replace('&', chr(92)+'&').strip()}}},
-        journal={{{try_convert(row, 'Journal', str).strip()}}},
-        number={{{try_convert(row, 'Issue', int)}}},
-        pages={{{try_convert(row, 'page range', str).replace(emdash, '-').replace('-', '--').strip() }}},
+        author={{{author}}},
+        journal={{{journal}}},
+        number={{{issue}}},
+        pages={{{pages}}},
         year={{{try_convert(row, 'year', str)}}},
     }}
                 """)
             except Exception as e:
                 my_row = row
                 print(base_name, row, repr(e))
+                
+
 #%%
 src_folder = './response_data/references_renamed/'
 dest_folder = './response_data/references_processed/'
@@ -130,6 +138,8 @@ for reference_path in reference_paths[:]:
             docxtobib( ref_path.absolute() )
         elif ref_path.suffix == '.xlsx':
             xlsx2bib(ref_path.absolute())
+        elif ref_path.suffix == '.bib' or ref_path.suffix == '.md':
+            pass
     except Exception as e:
         print(f'[{ref_name[11:]}] {repr(e)}')
         
@@ -142,7 +152,7 @@ proj_description_paths = glob('./response_data/project_descriptions_renamed/*')
 
 cite_sb_regex = re.compile(r'(\[.*?\d.*?\])') # Matches [1] and [ 1 ]
 cite_sb_regex2 = re.compile(r'\[.*?(\d+)\D*?(\d+)?\]') # Matches [1], [1, 2] and [8-10]
-cite_cite_regex = re.compile(r'\\cite')
+cite_cite_regex = re.compile(r'\\cite\{(.+?)\}')
 for bib_path in bib_paths:
     bib_path = Path(bib_path)
     person = bib_path.stem[11:]
@@ -150,7 +160,7 @@ for bib_path in bib_paths:
     proj_descriptions = list(filter(lambda file: person in file, proj_description_paths ))
     
     if len(proj_descriptions) != 1:
-        print(proj_descriptions)
+        # print(proj_descriptions)
         raise Exception(f'[{person}] Found {len(proj_descriptions)} project descriptions!')
         
     proj_description = proj_descriptions[0]
@@ -164,15 +174,26 @@ for bib_path in bib_paths:
     numbers = np.array(numbers, dtype=str).flatten()
     numbers = np.array(list(filter(lambda x: x, numbers)), dtype=int)
     if len(numbers) == 0:
-        citations = '[*]'
+        cite_cites = cite_cite_regex.findall(paras)
+        if len(cite_cites) > 0:
+            # citations = [citation.split(',') for citation in cite_cites]
+            citations = [citation for citation_list in cite_cites for citation in citation_list.split(',') ]
+            # cite_cites = [citation for citation in citations.split(',') for citations in cite_cites]
+            # print(citations)
+        else:
+            citations = '[*]'
     else:
         largest_ref = np.max(numbers)
         citations = [f'ref{n}' for n in range(1, largest_ref + 1)]
     # print(citations)
     try:
         make_bibliography(bib_path, dest_folder + bib_path.stem, citations=citations)
+        
+        # with open(dest_folder + bib_path.stem, 'rw') as file:
+        #     file.write(file.read())
+        
     except Exception as e:
-        print(person, bib_path)
+        print(person, bib_path, repr(e))
         # raise e
 
 

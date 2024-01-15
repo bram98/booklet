@@ -125,9 +125,10 @@ for portrait_path in tqdm(portrait_paths):
             if MODIFY_FILES:
                 
                 rescale_dpi(img)
-                # if img.format == 'png'
+                if img.format == 'png':
+                    print('png', path)
                 img.save(filename=dest_folder + portrait_file)
-                
+                # 
             # print(np.array(img.size)/np.array(img.resolution)*25.4)
             
     except Exception as e:

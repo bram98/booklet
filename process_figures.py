@@ -10,6 +10,7 @@ import shutil
 from tqdm import tqdm
 from fuzzywuzzy import fuzz
 
+from helper_functions import init_folder
 os.chdir(os.path.dirname(__file__))
 
 #%%

@@ -99,13 +99,13 @@ data.set_index('ID', inplace=True)
 
 
 #%%
-MODIFY_FILES = False    # If false, will not modify files. Use for debugging
+MODIFY_FILES = True    # If false, will not modify files. Use for debugging
 
 # Create folders. Warning: files inside will be deleted
 if MODIFY_FILES:
     create_errors_file()
     init_folder('portraits_renamed')
-    init_folder('project_descriptions_renamed')
+    # init_folder('project_descriptions_renamed')
     init_folder('references_renamed')
     init_folder('figures_renamed')
     
@@ -195,12 +195,12 @@ for(ID, person) in tqdm(data.iterrows(), total=len(data)):
     
     if MODIFY_FILES:
         if has_proj_description:
-            
-            copy_file('project_descriptions',
-                      'project_descriptions_renamed',
-                      proj_description_file, 
-                      'project_description',
-                      name)
+            pass
+            # copy_file('project_descriptions',
+            #           'project_descriptions_renamed',
+            #           proj_description_file, 
+            #           'project_description',
+            #           name)
         if has_references:
             copy_file('project_descriptions',
                       'references_renamed',

@@ -39,9 +39,13 @@ def strict_first_of(children, context):
 
 def pagify(text):
     dash_re = re.compile(r'[-\-]+')
+    text = str(text)
+    text = text.replace(u"\u2013", "-")
+    text = text.replace("--", "-")
+    # print(text, Text(r'\\-\\-').join(text.split(dash_re)))
     # print(dash_re.search(str(text)), str(text))
     if dash_re.search(str(text)):
-        return Text( 'pp. ', Symbol('ndash').join(text.split(dash_re)), '' )
+        return Text( 'pp. ', Text('--').join(text.split('-')), '' )
     else:
         return Text( 'p. ', text )
     
