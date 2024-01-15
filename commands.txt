@@ -1,6 +1,6 @@
 conda create -n booklet python=3.10 anaconda
 conda activate booklet
-conda install -c conda-forge unidecode opencv pdf2image pybtex python-docx fuzzywuzzy
+conda install -c conda-forge unidecode opencv pdf2image pybtex python-docx fuzzywuzzy, pypandoc
 conda install -c anaconda pywin32
 #conda install conda-forge::certifi
 #pip install ImageMagic

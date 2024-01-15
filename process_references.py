@@ -15,7 +15,7 @@ from pandas.api.types import is_any_real_numeric_dtype
 from pathlib import Path
 from docx import Document
 
-from helper_functions import init_folder, parse_id, copy_file
+from helper_functions import init_folder, parse_id, copy_file, fuzzy_equal
 from bibtexparser_v3 import make_bibliography
 
 os.chdir(os.path.dirname(__file__))
@@ -58,9 +58,18 @@ def check_page_range(pr):
         return False
     else:
         return True
+def docxtobib(docx_file: str):
+    docx_path = Path(docx_file)
+    doc = Document(docx_file)
+    fullText = []
+    for para in doc.paragraphs:
+        fullText.append(para.text)
+    fullText = '\n'.join(fullText)
+    with open(docx_path.with_suffix('.bib'), 'w') as file:
+        file.write(fullText)
 
-
-def xlsx2bib(xlsx_file):
+def xlsx2bib(xlsx_file: str):
+    global my_row
     # Replace file extension
     base_name = splitext(xlsx_file)[0]
     bib_file = base_name + '.bib'
@@ -68,17 +77,29 @@ def xlsx2bib(xlsx_file):
     # Parse excel file
     df = pd.read_excel(xlsx_file).sort_values(by='Number')
 
+    def try_convert(row, column_name, type_):
+        try:
+            return type_(row.filter(regex=re.compile(column_name, flags=re.I)).iloc[0])
+        except:
+            return ''
+        
+    emdash= u'\u2014'
+       # number={{{int(row['Issue']) if not np.isnan(row['Issue']) else ''}}},
     # For each row in the xlsx file, generated an entry in the bib file
     with open(bib_file, 'w') as fh:
         for i, row in df.iterrows():
-            fh.write(f"""@article{{ref{row['Number']},
-            author={{{row['First author'].replace('&', chr(92)+'&').strip()}}},
-            journal={{{row['Journal'].strip()}}},
-            number={{{int(row['Issue']) if not np.isnan(row['Issue']) else ''}}},
-            pages={{{str(row['page range']).replace('-', '--').strip() if check_page_range(row['page range']) else ''}}},
-            year={{{row['year']}}},
-            }}
-            """)
+            try:
+                fh.write(f"""@article{{ref{row['Number']},
+        author={{{row['First author'].replace('&', chr(92)+'&').strip()}}},
+        journal={{{try_convert(row, 'Journal', str).strip()}}},
+        number={{{try_convert(row, 'Issue', int)}}},
+        pages={{{try_convert(row, 'page range', str).replace(emdash, '-').replace('-', '--').strip() }}},
+        year={{{try_convert(row, 'year', str)}}},
+    }}
+                """)
+            except Exception as e:
+                my_row = row
+                print(base_name, row, repr(e))
 #%%
 src_folder = './response_data/references_renamed/'
 dest_folder = './response_data/references_processed/'
@@ -90,9 +111,9 @@ if MODIFY_FILES:
     init_folder('references_processed')
     
 '''
-Convert excel to .bib
+Convert excel and docx to .bib
 '''
-for reference_path in tqdm(reference_paths[:]):
+for reference_path in reference_paths[:]:
     ref_path = Path(reference_path)
     ref_name = ref_path.stem
     ref_path = copy_file(
@@ -103,13 +124,18 @@ for reference_path in tqdm(reference_paths[:]):
         name = ref_name[11:]
         )
     ref_path = Path(ref_path)
-    
+    print(ref_path)
     try:
-        xlsx2bib(ref_path.absolute())
+        if ref_path.suffix == '.docx':
+            docxtobib( ref_path.absolute() )
+        elif ref_path.suffix == '.xlsx':
+            xlsx2bib(ref_path.absolute())
     except Exception as e:
         print(f'[{ref_name[11:]}] {repr(e)}')
         
 #%%
+# src_folder = './response_data/references_renamed/'
+dest_folder = './response_data/references_processed/'
 bib_paths = glob(dest_folder + '*.bib')
 proj_description_paths = glob('./response_data/project_descriptions_renamed/*')
 
@@ -124,6 +150,7 @@ for bib_path in bib_paths:
     proj_descriptions = list(filter(lambda file: person in file, proj_description_paths ))
     
     if len(proj_descriptions) != 1:
+        print(proj_descriptions)
         raise Exception(f'[{person}] Found {len(proj_descriptions)} project descriptions!')
         
     proj_description = proj_descriptions[0]
@@ -137,9 +164,16 @@ for bib_path in bib_paths:
     numbers = np.array(numbers, dtype=str).flatten()
     numbers = np.array(list(filter(lambda x: x, numbers)), dtype=int)
     if len(numbers) == 0:
-        print(person)
+        citations = '[*]'
     else:
         largest_ref = np.max(numbers)
+        citations = [f'ref{n}' for n in range(1, largest_ref + 1)]
+    # print(citations)
+    try:
+        make_bibliography(bib_path, dest_folder + bib_path.stem, citations=citations)
+    except Exception as e:
+        print(person, bib_path)
+        # raise e
 
 
 
