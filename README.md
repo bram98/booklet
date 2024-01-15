@@ -18,3 +18,5 @@ Files for processing the output from the Debye Booklet forms
    └── ... python files...
    ```
   5. Run `rename_files.py`. This should create some more folders containing nicely named files. Be sure to run `inspect_names()` to see any differences between the names provided in the form and that of uu.
+
+https://www.uu.nl/sites/default/files/2021%20Debye%20postgraduate%20research%20projects.pdf
