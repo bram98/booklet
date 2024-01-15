@@ -99,13 +99,13 @@ data.set_index('ID', inplace=True)
 
 
 #%%
-MODIFY_FILES = True    # If false, will not modify files. Use for debugging
+MODIFY_FILES = False    # If false, will not modify files. Use for debugging
 
 # Create folders. Warning: files inside will be deleted
 if MODIFY_FILES:
     create_errors_file()
     init_folder('portraits_renamed')
-    # init_folder('project_descriptions_renamed')
+    init_folder('project_descriptions_renamed')
     init_folder('references_renamed')
     init_folder('figures_renamed')
     
@@ -143,9 +143,15 @@ for(ID, person) in tqdm(data.iterrows(), total=len(data)):
     # print(list(proj_description_list))
     # print(list(reference_list))
     # print(f'{len(list(proj_description_list))} {len(list(reference_list))}')
+    if '20 J' in name:
+        print(proj_description_list)
+        print(reference_list)
+        
     if(len(proj_description_list)>=1):
         has_proj_description = True
         proj_description_file = proj_description_list[-1]
+        if '20 J' in name:
+            print(proj_description_file)
     else:
         # sadly, one person did not upload a project description and I have to check for this
         has_proj_description = False 
@@ -189,12 +195,12 @@ for(ID, person) in tqdm(data.iterrows(), total=len(data)):
     
     if MODIFY_FILES:
         if has_proj_description:
-            pass
-            # copy_file('project_descriptions',
-            #           'project_descriptions_renamed',
-            #           proj_description_file, 
-            #           'project_description',
-            #           name)
+            
+            copy_file('project_descriptions',
+                      'project_descriptions_renamed',
+                      proj_description_file, 
+                      'project_description',
+                      name)
         if has_references:
             copy_file('project_descriptions',
                       'references_renamed',

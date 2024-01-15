@@ -39,7 +39,7 @@ def strict_first_of(children, context):
 
 def pagify(text):
     dash_re = re.compile(r'[-\-]+')
-    print(dash_re.search(str(text)), str(text))
+    # print(dash_re.search(str(text)), str(text))
     if dash_re.search(str(text)):
         return Text( 'pp. ', Symbol('ndash').join(text.split(dash_re)), '' )
     else:
@@ -81,7 +81,7 @@ def short_names(children, context, role, max_names=1, **kwargs):
 class MyStyle(UnsrtStyle):
     abbreviate_names = True
     def my_format_name(self, person, abbr=True):
-        print(abbr)
+        # print(abbr)
         return join[
             name_part(tie=True, abbr=abbr)[person.rich_first_names + person.rich_middle_names],
             name_part(tie=True)[person.rich_prelast_names],

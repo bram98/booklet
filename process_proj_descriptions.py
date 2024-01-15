@@ -10,6 +10,8 @@ import doc2docx
 from tqdm import tqdm
 import re
 
+from helper_functions import parse_id
+
 #%%
 
 os.chdir(os.path.dirname(__file__))
@@ -53,8 +55,7 @@ def write_file_type_errors():
     # write_errors('figure', caption_ids, caption_errs)
 # convert_doc_to_docx_windows()
 # inspect_file_types()
-def get_id(filename):
-    return int(re.search('(\d+)', filename)[0])
+
 #%%
 
 # from glob import escape
