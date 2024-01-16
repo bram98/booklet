@@ -84,7 +84,7 @@ for i, row in df.iterrows():
                 ref_string = file.read()
                 
                 print(ref_string)
-                ref_string = ref_string.replace('\-\-\-', endash)
+                ref_string = ref_string.replace('\-\-', endash)
                 md_string += ref_string
                 print(ref_string)
         

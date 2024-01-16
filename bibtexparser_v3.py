@@ -126,6 +126,7 @@ class MyStyle(UnsrtStyle):
                     join(', ') [ 
                         optional [ volume_and_issue_number ],
                         optional [ pages ],
+                        optional [ field('year') ],
                     ],
                 ],
             ]

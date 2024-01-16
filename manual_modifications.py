@@ -22,6 +22,10 @@ os.chdir(os.path.dirname(__file__))
 def set_entry(name, column, new_value):
     global data
     data.loc[ data['Full Name'] == name, column ] = new_value
+    
+def append_entry(name, column, new_value):
+    global data
+    data.loc[ data['Full Name'] == name, column ] += new_value
 
 #%%
 data = pd.read_excel('responses.xlsx')
@@ -42,6 +46,7 @@ data.set_index('ID', inplace=True)
 data_path = Path('responses.xlsx')
 
 set_entry('Kirsten Siebers', 'Photo of yourself', 'KirstenSiebers_Kirsten Siebers.jpg')
+append_entry('Amanda van der Sijs', 'Project Description', ';references 86 Amanda van der Sijs.xlsx')
 
 
 data_path.replace(data_path.with_stem('responses_old'))
