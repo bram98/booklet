@@ -146,8 +146,8 @@ Convert excel and docx to .bib
 for reference_path in reference_paths[:]:
     ref_path = Path(reference_path)
     ref_name = ref_path.stem
-    if not 'Bram' in ref_name:
-        continue
+    # if not 'Bram' in ref_name:
+    #     continue
     ref_path = copy_file(
         src_folder='references_renamed', 
         dest_folder='references_processed',
