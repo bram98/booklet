@@ -66,8 +66,13 @@ def docxtobib(docx_file: str):
     for para in doc.paragraphs:
         fullText.append(para.text)
     fullText = '\n'.join(fullText)
+    fullText2 = unidecode(fullText)
+    fullText2 = fullText2.replace('"','')
+    if fullText2 != fullText:
+        # print('Found unicode! \n', fullText)
+        print('Found unicode! \n', Path(docx_file).stem)
     with open(docx_path.with_suffix('.bib'), 'w') as file:
-        file.write(fullText)
+        file.write(fullText2)
 
 def xlsx2bib(xlsx_file: str):
     global my_row
@@ -93,13 +98,18 @@ def xlsx2bib(xlsx_file: str):
                 author = replace_accents(row['First author'].replace('&', chr(92)+'&').strip())
                 journal = replace_accents(try_convert(row, 'Journal', str).strip())
                 issue = try_convert(row, 'Issue', int)
-                pages =replace_accents( try_convert(row, 'page range', str).replace(emdash, '-').replace('-', '--').strip() )
+                pages = replace_accents( try_convert(row, 'page range', str).replace(emdash, '-').replace('-', '--').strip() )
+                if re.compile('\d').search(pages):
+                    pages_str = f'pages={{{pages}}},\n'
+                else:
+                    pages_str = ''
+                    print(pages)
                 
                 fh.write(f"""@article{{ref{row['Number']},
         author={{{author}}},
         journal={{{journal}}},
         number={{{issue}}},
-        pages={{{pages}}},
+        {pages_str}
         year={{{try_convert(row, 'year', str)}}},
     }}
                 """)
@@ -147,7 +157,7 @@ for reference_path in reference_paths[:]:
 # src_folder = './response_data/references_renamed/'
 dest_folder = './response_data/references_processed/'
 bib_paths = glob(dest_folder + '*.bib')
-proj_description_paths = glob('./response_data/project_descriptions_renamed/*')
+proj_description_paths = glob('./response_data/project_descriptions_processed/*')
 
 
 cite_sb_regex = re.compile(r'(\[.*?\d.*?\])') # Matches [1] and [ 1 ]
@@ -181,14 +191,17 @@ for bib_path in bib_paths:
             # cite_cites = [citation for citation in citations.split(',') for citations in cite_cites]
             # print(citations)
         else:
-            citations = '[*]'
+            citations = ['*']
     else:
         largest_ref = np.max(numbers)
         citations = [f'ref{n}' for n in range(1, largest_ref + 1)]
     # print(citations)
+    if 'Itir' in person:
+        print(citations)
+        pp =bib_path
     try:
         make_bibliography(bib_path, dest_folder + bib_path.stem, citations=citations)
-        
+        pass
         # with open(dest_folder + bib_path.stem, 'rw') as file:
         #     file.write(file.read())
         

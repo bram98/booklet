@@ -5,7 +5,7 @@ import pybtex.database.input.bibtex
 import pybtex.plugin
 import os
 import re
-
+from importlib import reload
 # from docx import Document
 # from htmldocx import HtmlToDocx
 
@@ -100,7 +100,38 @@ class MyStyle(UnsrtStyle):
             return sentence [ formatted_names ]
         else:
             return formatted_names
-    
+    def get_inproceedings_template(self, e):
+        volume_and_issue_number = (# volume and pages, with optional issue number
+            join [
+                optional [ tag('em') [ field('volume') ] ],
+                optional [ 
+                    '(',
+                    strict_first_of [ 
+                        field('issue'), 
+                        field('issues'), 
+                        field('number'),
+                    ],
+                    ')',
+                ],
+            ],
+        )
+
+        template = toplevel [
+            join(', ') [
+                self.format_names('author'),
+                # optional [ '\"', field('title'), '\"'],
+                sentence [
+                    tag('em') [ strict_first_of[ field('journal'), field('organization') ] ],
+                    join(', ') [ 
+                        optional [ volume_and_issue_number ],
+                        optional [ pages ],
+                        optional [ field('year') ],
+                    ],
+                ],
+            ]
+
+        ]
+        return template
     def get_article_template(self, e):
         volume_and_issue_number = (# volume and pages, with optional issue number
             join [

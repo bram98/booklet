@@ -9,17 +9,20 @@ from docx.shared import Inches
 import doc2docx
 from tqdm import tqdm
 import re
+import shutil
+import panda as pd
 
-from helper_functions import parse_id
-
-#%%
+from helper_functions import parse_id, init_folder, write_errors
 
 os.chdir(os.path.dirname(__file__))
+#%%
 
+data = pd.read_excel('responses.xlsx')
+data.set_index('ID', inplace=True)
 #%%
 def convert_doc_to_docx_windows():
     print('Converting .doc files to .docx files...')
-    doc_files = glob('response_data/project_descriptions_renamed/*.doc')
+    doc_files = glob('response_data/project_descriptions_processed/*.doc')
     for doc_file in tqdm(doc_files):
         doc2docx.convert(doc_file)
     print('\nDone converting .doc files to .docx files')
@@ -38,7 +41,7 @@ def inspect_file_types():
             print(Path(filename).name)
 
 def write_file_type_errors():
-    filenames = glob('response_data/project_descriptions_renamed/*')
+    filenames = glob('response_data/project_descriptions_processed/*')
     filename_ids = []
     filename_errs = []
     for filename in filenames:
@@ -59,10 +62,18 @@ def write_file_type_errors():
 #%%
 
 # from glob import escape
-filenames = glob(r'response_data/project_descriptions_renamed/*.docx')
-
-convert_doc_to_docx_windows()
-write_file_type_errors()
+filenames = glob(r'response_data/project_descriptions_renamed/*')
+target_dir = Path(r'./response_data/project_descriptions_processed')
+MODIFY_FILES = True
+if MODIFY_FILES:
+    init_folder('project_descriptions_processed')
+    for filename in filenames:
+        src_path = Path(filename)
+        target_path = target_dir/src_path.name
+        shutil.copy(src_path, target_path)
+        
+    convert_doc_to_docx_windows()
+    write_file_type_errors()
 #%%
 filenames = glob('response_data/project_descriptions_renamed/*.docx')
 
@@ -114,12 +125,85 @@ print(ref_list)
 # lengths_flattened = [length for row in lengths for length in row]
 
 #%%
-# plt.figure()
-# plt.ylim(0,50)
-# plt.hist(lengths_flattened, bins=200)
-ref_filenames = glob(r'response_data/references_renamed/*')
-ref_ids = [get_id(ref_filename) for ref_filename in ref_filenames]
-ref_ids = sorted(ref_ids)
-print(ref_ids)
-print(ref_list)
+wrong_proj_descriptions = [
+    'Claudia Keijzer',
+    'Thimo Jacobs',
+    'Just Pe',
+    'Huygen Jobsis',
+    'Oscar Brandt',
+    'Roos Grote',
+    'Komal',
+    'Matt Peerlings',
+    'Pim Witte',
+    'Laurens Mandemaker',
+    'Pauline Julika',
+    'Suzan Schoemaker',
+    'Marnix Vreugdenhil',
+    'Jim de Ruiter',
+    'Maaike Vink',
+    'Diogo Vieira',
+    'Sofie Ferwerda',
+    'George Tierney',
+    'Rodolfo Subert',
+    'Sepideh',
+    'Bettinea',
+    'Joyce Kromwijk',
+    'Jesse Buckmann',
+    'Jelle Kranenborg',
+    'Albaraa',
+    'Hanya',
+    'Kelly Brouwer',
+    'Rian Ligthart',
+    'Yuang Piao',
+    'Roel Biene',
+    'Xinwei Ye',
+    'Robin Vogel',
+    'Mengwei Li',
+    'Jesse Steenhoff',
+    'Maartje Otten',
+    'Qijun Che',
+    'Nicolette Maaskant',
+    'Jan Cuperus',
+    'Riccardo Reho',
+    'Luuk Stringer',
+    'Zahra',
+    'Errikos',
+    'Gerardo',
+    'Edwin Armando',
+    'Sebastian Rejman',
+    'Sibylle',
+    'Sander Vonk',
+    'Luke Riddel',
+    'Claire Seitzinger',
+    'Monica Conte',
+    'Thomas Resz',
+    'Thijs ter Rele',
+    'Ruizhi Yang',
+    'Hui Wang',
+    'Xiang Yu',
+    'Auke Vlasblom',
+    'Jiaorang Yan',
+    'Chunning Sun',
+    'Zixiong Wei',
+    'Montserrat',
+    'Karan',
+    'Disha',
+    'David Villaron',
+    'Weizhe Zhang'
+    ]
+vowel_regex = re.compile(r'[aeiou]')  # To match á î è etc.
+email_adresses = ''
+# for name in wrong_proj_descriptions:
+#     name_regex = re.compile(re.sub(vowel_regex, '.', name))
+#     if sum(data['Full Name'].str.contains(name_regex)) != 1:
+#         print(name)
+#     person = data.loc[data['Full Name'].str.contains(name_regex)]
+#     email_adress = person['Email'].item()
+#     print(person['Project Type'].item())
+#     email_adresses += f"{email_adress},"
 
+people2 = []
+for(ID, person) in data.iterrows():
+    # print(person['Project Type'] is np.nan)
+    if person['Project Type'] is np.nan:
+        print(person['Full Name'])

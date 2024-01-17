@@ -25,13 +25,13 @@ last = f''
 
 group_regex = re.compile('\((.+?)\)')
 # For each response, collect everything in a folder for Conny
-# for i, row in df.head(2).iterrows():
+# for i, row in df.head(2).iterrows(): 
 for i, row in df.iterrows():
     try:
         row_ =row
         first_group = row['Research Group'].split(';')[0].split('(')[0].strip()
         group_abbr = group_regex.search(row["Research Group"]).group(1)
-        if not 'PCC' in group_abbr:
+        if not 'NP' in group_abbr:
             continue
         full_name = row['Full Name'].strip().split()
         id_and_name = f'{row["ID"]} {unidecode(row["Full Name"])}'
@@ -67,7 +67,7 @@ for i, row in df.iterrows():
 | Keyword(s):{tab*2}{row['Keywords']}
 
 """
-        file_src = glob(f'response_data/project_descriptions_renamed/project_description {id_and_name}.*')[0]
+        file_src = glob(f'response_data/project_descriptions_processed/project_description {id_and_name}.*')[0]
         # project_description = pandoc.read(file=file_src)
         project_description = pypandoc.convert_file(source_file=file_src, to='md')
         # md_string += pandoc.write(project_description)

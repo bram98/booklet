@@ -12,6 +12,7 @@ import re
 from tqdm import tqdm
 import json
 from fuzzywuzzy import fuzz
+from pathlib import Path
 from helper_functions import init_folder, copy_file, fuzzy_equal, write_errors, clear_errors 
 
 os.chdir(os.path.dirname(__file__))
@@ -91,6 +92,33 @@ def write_errors_in_name():
                 )
             
     write_errors('name', id_list, err_list)    
+#%%
+EXTRACT_NEW_BATCH = True
+
+def move_files(file_type, src_folder):
+    files = glob(f'new_batch/Untitled form/{src_folder}/*')
+    for file in files:
+        dest_name = Path(file).name
+        shutil.copy(file, f'./response_data/{file_type}/' + dest_name)
+
+if EXTRACT_NEW_BATCH:
+    if not os.path.isdir('new_batch/Untitled form'):
+        raise Exception('Folder "new_batch/Untitled form" not found')
+            
+    init_folder('portraits')
+    init_folder('figures')
+    init_folder('project_descriptions')
+    
+    move_files('portraits', 'Question')
+    print('Moved files from new_batch to portraits')
+    move_files('figures', 'Question 2')
+    print('Moved files from new_batch to figures')
+    move_files('project_descriptions', 'Question 3')
+    print('Moved files from new_batch to project_descriptions')
+    
+    
+    
+    
 
 #%%
 # Read in the data as a pandas dataframe
@@ -105,7 +133,7 @@ MODIFY_FILES = True    # If false, will not modify files. Use for debugging
 if MODIFY_FILES:
     create_errors_file()
     init_folder('portraits_renamed')
-    # init_folder('project_descriptions_renamed')
+    init_folder('project_descriptions_renamed')
     init_folder('references_renamed')
     init_folder('figures_renamed')
     
@@ -143,15 +171,15 @@ for(ID, person) in tqdm(data.iterrows(), total=len(data)):
     # print(list(proj_description_list))
     # print(list(reference_list))
     # print(f'{len(list(proj_description_list))} {len(list(reference_list))}')
-    if '20 J' in name:
-        print(proj_description_list)
-        print(reference_list)
+    # if '20 J' in name:
+    #     print(proj_description_list)
+    #     print(reference_list)
         
     if(len(proj_description_list)>=1):
         has_proj_description = True
         proj_description_file = proj_description_list[-1]
-        if '20 J' in name:
-            print(proj_description_file)
+        # if '20 J' in name:
+        #     print(proj_description_file)
     else:
         # sadly, one person did not upload a project description and I have to check for this
         has_proj_description = False 
@@ -195,12 +223,11 @@ for(ID, person) in tqdm(data.iterrows(), total=len(data)):
     
     if MODIFY_FILES:
         if has_proj_description:
-            pass
-            # copy_file('project_descriptions',
-            #           'project_descriptions_renamed',
-            #           proj_description_file, 
-            #           'project_description',
-            #           name)
+            copy_file('project_descriptions',
+                      'project_descriptions_renamed',
+                      proj_description_file, 
+                      'project_description',
+                      name)
         if has_references:
             copy_file('project_descriptions',
                       'references_renamed',
