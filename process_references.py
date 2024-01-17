@@ -59,6 +59,10 @@ def check_page_range(pr):
         return False
     else:
         return True
+    
+def escape_markdown(match: re.Match):
+    return f'\&#{ord(match.group())};'
+
 def docxtobib(docx_file: str):
     docx_path = Path(docx_file)
     doc = Document(docx_file)
@@ -66,13 +70,18 @@ def docxtobib(docx_file: str):
     for para in doc.paragraphs:
         fullText.append(para.text)
     fullText = '\n'.join(fullText)
-    fullText2 = unidecode(fullText)
-    fullText2 = fullText2.replace('"','')
+    # fullText2 = unidecode(fullText)
+    # fullText2 = fullText2.replace('"','')
+    non_alphanumeric = re.compile(r'([^a-zA-Z0-9\@\{\},=\n\ ])', re.UNICODE)
+    fullText2 = re.sub( non_alphanumeric, escape_markdown, fullText )
+    # fullText2 = fullText
     if fullText2 != fullText:
         # print('Found unicode! \n', fullText)
         print('Found unicode! \n', Path(docx_file).stem)
     with open(docx_path.with_suffix('.bib'), 'w') as file:
         file.write(fullText2)
+
+
 
 def xlsx2bib(xlsx_file: str):
     global my_row
@@ -85,7 +94,10 @@ def xlsx2bib(xlsx_file: str):
 
     def try_convert(row, column_name, type_):
         try:
-            return type_(row.filter(regex=re.compile(column_name, flags=re.I)).iloc[0])
+            result = type_(row.filter(regex=re.compile(column_name, flags=re.I)).iloc[0])
+            if result == 'nan':
+                raise
+            return result
         except:
             return ''
         
@@ -103,7 +115,7 @@ def xlsx2bib(xlsx_file: str):
                     pages_str = f'pages={{{pages}}},\n'
                 else:
                     pages_str = ''
-                    print(pages)
+                    print(pages, try_convert(row, 'page range', str))#, row.filter(regex=re.compile('pages', flags=re.I)).iloc[0])
                 
                 fh.write(f"""@article{{ref{row['Number']},
         author={{{author}}},
@@ -134,6 +146,8 @@ Convert excel and docx to .bib
 for reference_path in reference_paths[:]:
     ref_path = Path(reference_path)
     ref_name = ref_path.stem
+    if not 'Bram' in ref_name:
+        continue
     ref_path = copy_file(
         src_folder='references_renamed', 
         dest_folder='references_processed',

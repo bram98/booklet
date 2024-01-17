@@ -10,6 +10,7 @@ from unidecode import unidecode
 from pandas.api.types import is_any_real_numeric_dtype
 import os
 import re
+from pathlib import Path
 
 from docx import Document
 from docx.shared import Pt
@@ -83,10 +84,10 @@ for i, row in df.iterrows():
             with open(file_src, 'r') as file:
                 ref_string = file.read()
                 
-                print(ref_string)
+                # print(ref_string)
                 ref_string = ref_string.replace('\-\-', endash)
                 md_string += ref_string
-                print(ref_string)
+                # print(ref_string)
         
         # print(md_string)
         fig_caption = row['Figure Caption (optional)']
@@ -103,11 +104,27 @@ Figure 1: {fig_caption.strip()}
         # Write the md_string to a Word file
         # doc = pandoc.read(md_string)
         # file_dest = osp.join(dest_dir, f'project_description {row["ID"]} {row["Full Name"]}.docx')
-        outputfile =  osp.join(dest_dir, f'project_description {row["ID"]} {row["Full Name"]}.docx')
+        # outputfile =  osp.join(dest_dir, f'project_description {row["ID"]} {row["Full Name"]}.docx')
+        outputfile_md = Path(dest_dir)/Path(f'project_description {row["ID"]} {row["Full Name"]}.md')
+        outputfile_docx = outputfile_md.with_suffix('.docx')
         # print(md_string)
-        pypandoc.convert_text(md_string, format='md', to='docx', outputfile=outputfile)
         
-        doc = Document(outputfile)
+        amp_regex = re.compile(r'&amp;')
+        unicode_regex = re.compile(r'&#(\d+);')
+        def unicode_md_to_python(match: re.Match):
+            print(match)
+            return chr(int(match.group(1)))
+        md_string = re.sub(amp_regex, '&', md_string)
+        md_string = re.sub(r'\\#', '#', md_string)
+        md_string = re.sub(unicode_regex, unicode_md_to_python, md_string)
+        if 'Bram' in full_name:
+            print(md_string)
+        with open(outputfile_md, 'w', encoding="utf-8") as file:
+            file.write(md_string)
+        # pypandoc.convert_text(md_string, format='md', to='docx', outputfile=outputfile_docx)
+        pypandoc.convert_file( outputfile_md, 'docx', outputfile=outputfile_docx )
+        
+        doc = Document(outputfile_docx)
         style = doc.styles['Normal']
         font = style.font
         font.name = 'Arial'
@@ -116,7 +133,7 @@ Figure 1: {fig_caption.strip()}
         for para in doc.paragraphs:
             para.style = doc.styles['Normal']
             
-        doc.save(outputfile)
+        doc.save(outputfile_docx)
         
     except Exception as e:
         print(repr(e))

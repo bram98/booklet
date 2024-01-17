@@ -78,7 +78,7 @@ def short_names(children, context, role, max_names=1, **kwargs):
 
     formatted_names = join(**kwargs) [ formatted_names ]
     if len(persons) > max_names:
-        formatted_names = join [ formatted_names, tag('em') [ ' et al.' ] ]
+        formatted_names = join [ formatted_names, ' ', tag('em') [ 'et al.' ] ]
         
     return formatted_names.format_data(context)
 
