@@ -23,6 +23,7 @@ df = pd.read_excel('responses.xlsx')
 first = f''
 last = f''
 
+MODIFY_FILES = False
 
 group_regex = re.compile('\((.+?)\)')
 # For each response, collect everything in a folder for Conny
@@ -30,7 +31,12 @@ group_regex = re.compile('\((.+?)\)')
 for i, row in df.iterrows():
     try:
         row_ =row
-        first_group = row['Research Group'].split(';')[0].split('(')[0].strip()
+        groups = row['Research Group'].split(';')
+        if groups[1]:
+            
+            print(row['Email'])
+        continue
+        first_group = groups[0].split('(')[0].strip()
         group_abbr = group_regex.search(row["Research Group"]).group(1)
         if not 'CMI' in group_abbr:
             continue
@@ -43,13 +49,15 @@ for i, row in df.iterrows():
         # Copy the image files
         file_src = glob(f'response_data/portraits_renamed/portrait {id_and_name}.*')[0]
         file_dest = osp.join(dest_dir, osp.basename(file_src))
-        copy(file_src, file_dest)
+        if MODIFY_FILES:
+            copy(file_src, file_dest)
     
         file_src = glob(f'response_data/figures_renamed/figure {id_and_name}.*')
         if len(file_src) > 0:  # It's allowed for responses to have no figures
             file_src = file_src[0]
             file_dest = osp.join(dest_dir, osp.basename(file_src))
-            copy(file_src, file_dest)
+            if MODIFY_FILES:
+                copy(file_src, file_dest)
             
         tab = '&Tab;'
         # Create the word file with project description and other info
@@ -119,21 +127,23 @@ Figure 1: {fig_caption.strip()}
         md_string = re.sub(unicode_regex, unicode_md_to_python, md_string)
         if 'Jan' in full_name:
             print(file_src)
-        with open(outputfile_md, 'w', encoding="utf-8") as file:
-            file.write(md_string)
+        if MODIFY_FILES:
+            with open(outputfile_md, 'w', encoding="utf-8") as file:
+                file.write(md_string)
         # pypandoc.convert_text(md_string, format='md', to='docx', outputfile=outputfile_docx)
-        pypandoc.convert_file( outputfile_md, 'docx', outputfile=outputfile_docx )
-        
-        doc = Document(outputfile_docx)
-        style = doc.styles['Normal']
-        font = style.font
-        font.name = 'Arial'
-        font.size = Pt(12)
-        
-        for para in doc.paragraphs:
-            para.style = doc.styles['Normal']
+        if MODIFY_FILES:
+            pypandoc.convert_file( outputfile_md, 'docx', outputfile=outputfile_docx )
             
-        doc.save(outputfile_docx)
+            doc = Document(outputfile_docx)
+            style = doc.styles['Normal']
+            font = style.font
+            font.name = 'Arial'
+            font.size = Pt(12)
+            
+            for para in doc.paragraphs:
+                para.style = doc.styles['Normal']
+                
+            doc.save(outputfile_docx)
         
     except Exception as e:
         print(repr(e))
