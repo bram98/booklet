@@ -112,7 +112,7 @@ if MODIFY_FILES:
         with wImg(filename=png_file, resolution=300) as img:
             img.compression_quality = 99
             jpg_file = Path(png_file).with_suffix('.jpg')
-            print(jpg_file)
+            # print(jpg_file)
             img.save(filename=jpg_file)
         Path(png_file).unlink(missing_ok=True)
     print()

@@ -23,7 +23,7 @@ df = pd.read_excel('responses.xlsx')
 first = f''
 last = f''
 
-MODIFY_FILES = False
+MODIFY_FILES = True
 
 group_regex = re.compile('\((.+?)\)')
 # For each response, collect everything in a folder for Conny
@@ -32,13 +32,13 @@ for i, row in df.iterrows():
     try:
         row_ =row
         groups = row['Research Group'].split(';')
-        if groups[1]:
+        # if groups[1]:
             
-            print(row['Email'])
-        continue
+        #     print(row['Email'])
+        
         first_group = groups[0].split('(')[0].strip()
         group_abbr = group_regex.search(row["Research Group"]).group(1)
-        if not 'CMI' in group_abbr:
+        if not 'NP' in group_abbr:
             continue
         full_name = row['Full Name'].strip().split()
         id_and_name = f'{row["ID"]} {unidecode(row["Full Name"])}'
@@ -47,7 +47,7 @@ for i, row in df.iterrows():
         makedirs(dest_dir, exist_ok=True)
     
         # Copy the image files
-        file_src = glob(f'response_data/portraits_renamed/portrait {id_and_name}.*')[0]
+        file_src = glob(f'response_data/portraits_processed/portrait {id_and_name}.*')[0]
         file_dest = osp.join(dest_dir, osp.basename(file_src))
         if MODIFY_FILES:
             copy(file_src, file_dest)
@@ -113,7 +113,7 @@ Figure 1: {fig_caption.strip()}
         # doc = pandoc.read(md_string)
         # file_dest = osp.join(dest_dir, f'project_description {row["ID"]} {row["Full Name"]}.docx')
         # outputfile =  osp.join(dest_dir, f'project_description {row["ID"]} {row["Full Name"]}.docx')
-        outputfile_md = Path(dest_dir)/Path(f'project_description {row["ID"]} {row["Full Name"]}.md')
+        outputfile_md = Path(dest_dir)/Path(f'project_description {id_and_name}.md')
         outputfile_docx = outputfile_md.with_suffix('.docx')
         # print(md_string)
         

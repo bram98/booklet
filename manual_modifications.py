@@ -21,7 +21,9 @@ os.chdir(os.path.dirname(__file__))
 #%%
 def set_entry(name, column, new_value):
     global data
-    data.loc[ data['Full Name'] == name, column ] = new_value
+    if data['Full Name'].str.match( name ).sum() != 1:
+        raise Except(f'Could not find name {name}')
+    data.loc[ data['Full Name'].str.match( name ), column ] = new_value
     
 def append_entry(name, column, new_value):
     global data
@@ -75,9 +77,25 @@ data_path = Path('responses.xlsx')
 
 set_entry('Kirsten Siebers', 'Photo of yourself', 'KirstenSiebers_Kirsten Siebers.jpg')
 set_entry('Amanda van der Sijs', 'Project Description', './manual_files/project_description 86 Amanda van der Sijs.docx;./manual_files/references 86 Amanda van der Sijs.xlsx')
+
+set_entry('Sibylle Schwartmann', 'Project Description', 'project_description 98 Sibylle Schwartmann.docx')
+set_entry('Sibylle Schwartmann', 'Project Title', 'Monitoring the Electrooxidation of Lignin Model Compounds with *in situ* ATR-IR spectroscopy')
+set_entry('Sibylle Schwartmann', 'Project Type', 'PhD')
+
+set_entry('Susana', 'Project Description', './manual_files/project_description 84 Susana Marin Aguilar.docx')
+set_entry('Susana', 'Figure (optional)', 'figure 84 Susana Marin Aguilar.pdf')
+set_entry('Susana', 'Photo of yourself', 'portrait 84 Susana Marin Aguilar.tiff')
+
 # append_entry('Amanda van der Sijs', 'Project Description', './manual_files/project_description 86 Amanda van der Sijs.docx;./manual_files/references 86 Amanda van der Sijs.xlsx')
 append_file_by_name('Amanda van der Sijs.xlsx', './manual_files', 'response_data/project_descriptions')
 append_file_by_name('Amanda van der Sijs.docx', './manual_files', './response_data/project_descriptions')
+
+append_file_by_name('project_description 98 Sibylle Schwartmann.docx', './manual_files', './response_data/project_descriptions')
+
+append_file_by_name('project_description 84 Susana Marin Aguilar.docx', './manual_files', './response_data/project_descriptions')
+append_file_by_name('figure 84 Susana Marin Aguilar.pdf', './manual_files', './response_data/figures')
+append_file_by_name('portrait 84 Susana Marin Aguilar.tiff', './manual_files', './response_data/portraits')
+
 
 data_path.replace(data_path.with_stem('responses_old'))
 data.to_excel('responses.xlsx')

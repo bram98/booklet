@@ -177,9 +177,10 @@ for(ID, person) in tqdm(data.iterrows(), total=len(data)):
         
     if(len(proj_description_list)>=1):
         has_proj_description = True
+        if 'bylle' in name:
+            print(proj_description_list, person['Project Description'], name)
+            prd = person['Project Description']
         proj_description_file = proj_description_list[-1]
-        # if '20 J' in name:
-        #     print(proj_description_file)
     else:
         # sadly, one person did not upload a project description and I have to check for this
         has_proj_description = False 
