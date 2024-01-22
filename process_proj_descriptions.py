@@ -10,27 +10,42 @@ import doc2docx
 from tqdm import tqdm
 import re
 import shutil
-import panda as pd
+import pandas as pd
 
-from helper_functions import parse_id, init_folder, write_errors
 
 os.chdir(os.path.dirname(__file__))
+from helper_functions import parse_id, init_folder, write_errors
 #%%
 
 data = pd.read_excel('responses.xlsx')
 data.set_index('ID', inplace=True)
 #%%
+# def convert_doc_to_docx_windows2():
+#     print('Converting .doc files to .docx files...')
+#     doc_files = glob('response_data/project_descriptions_processed/*.docx')
+#     for doc_file in tqdm(doc_files):
+#         try:
+#             doc2docx.convert(doc_file)
+#         except:
+#             print(f'Error converting .doc to .docx: {doc_file}')
+#             raise
+#     print('\nDone converting .doc files to .docx files')
+    
+#     print('Removing old .doc files...')
+#     for doc_file in tqdm(doc_files):
+#         Path(doc_file).unlink( missing_ok=True)
+    
+#     print('\nDone removing old .doc files...')
+    
 def convert_doc_to_docx_windows():
     print('Converting .doc files to .docx files...')
     doc_files = glob('response_data/project_descriptions_processed/*.doc')
-    for doc_file in tqdm(doc_files):
-        doc2docx.convert(doc_file)
-    print('\nDone converting .doc files to .docx files')
+    
+    doc2docx.convert('response_data/project_descriptions_processed/')
     
     print('Removing old .doc files...')
     for doc_file in tqdm(doc_files):
         Path(doc_file).unlink( missing_ok=True)
-    
     print('\nDone removing old .doc files...')
 
 def inspect_file_types():
