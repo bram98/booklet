@@ -184,7 +184,7 @@ latexAccents = [
   [ u"„", ",," ],
 ]
 def replace_accents(string):
-    for accent in latexAccents[:]:
-        # print(accent)
-        string = string.replace(accent[0], accent[1])
+    # for accent in latexAccents[:]:
+    #     # print(accent)
+    #     string = string.replace(accent[0], accent[1])
     return string

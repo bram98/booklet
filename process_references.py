@@ -63,6 +63,11 @@ def check_page_range(pr):
 def escape_markdown(match: re.Match):
     return f'\&#{ord(match.group())};'
 
+def replace_accents_markdown(string: str):
+    non_alphanumeric = re.compile(r'([^a-zA-Z0-9\@\{\},=\n\ ])', re.UNICODE)
+    string = re.sub( non_alphanumeric, escape_markdown, string )
+    return string
+
 def docxtobib(docx_file: str):
     docx_path = Path(docx_file)
     doc = Document(docx_file)
@@ -72,8 +77,7 @@ def docxtobib(docx_file: str):
     fullText = '\n'.join(fullText)
     # fullText2 = unidecode(fullText)
     # fullText2 = fullText2.replace('"','')
-    non_alphanumeric = re.compile(r'([^a-zA-Z0-9\@\{\},=\n\ ])', re.UNICODE)
-    fullText2 = re.sub( non_alphanumeric, escape_markdown, fullText )
+    fullText2 = replace_accents_markdown(fullText)
     # fullText2 = fullText
     if fullText2 != fullText:
         # print('Found unicode! \n', fullText)
