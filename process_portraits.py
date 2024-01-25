@@ -11,7 +11,7 @@ from pdf2image import convert_from_path as pdf_read
 from tqdm import tqdm
 import re
 import numpy as np
-from patlib import Path
+from pathlib import Path
 os.chdir(os.path.dirname(__file__))
 
 from helper_functions import parse_id, write_errors
