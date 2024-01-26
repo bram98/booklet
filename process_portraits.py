@@ -185,14 +185,14 @@ for portrait_path in portrait_paths:
                 resolution_ids.append(parse_id(portrait_file))
                 resolution_errs.append(err_msg)
                 
-                print(portrait_file, img.size[0])
+                # print(portrait_file, img.size[0])
            
             (valid_aspect_ratio, err_msg ) = check_aspect_ratio(img)
             if not valid_aspect_ratio:
                 aspect_ratios_ids.append(parse_id(portrait_file))
                 aspect_ratios_errs.append(err_msg)
                 
-                print(portrait_file, img.size[0]/img.size[1], img.size[0]/img.size[1] - 35/45)
+                # print(portrait_file, img.size[0]/img.size[1], img.size[0]/img.size[1] - 35/45)
             
             if (not valid_aspect_ratio) or (not valid_resolution):
                 continue
