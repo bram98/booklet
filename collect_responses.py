@@ -38,7 +38,7 @@ for i, row in df.iterrows():
         
         first_group = groups[0].split('(')[0].strip()
         group_abbr = group_regex.search(row["Research Group"]).group(1)
-        if not 'NP' in group_abbr:
+        if not 'MCC' in group_abbr:
             continue
         full_name = row['Full Name'].strip().split()
         id_and_name = f'{row["ID"]} {unidecode(row["Full Name"])}'
@@ -52,7 +52,7 @@ for i, row in df.iterrows():
         if MODIFY_FILES:
             copy(file_src, file_dest)
     
-        file_src = glob(f'response_data/figures_renamed/figure {id_and_name}.*')
+        file_src = glob(f'response_data/figures_processed/figure {id_and_name}.*')
         if len(file_src) > 0:  # It's allowed for responses to have no figures
             file_src = file_src[0]
             file_dest = osp.join(dest_dir, osp.basename(file_src))
@@ -66,8 +66,9 @@ for i, row in df.iterrows():
             daily_str =''
         else:
             daily_str = f'\n| Daily supervisor(s):{tab}{row["Daily Supervisor(s) (optional)"]}\n'
+        project_title_str = row['Project Title'] if not row['Project Title'] is np.nan else ''
         md_string += f"""\
-{row['Project Title']}
+{project_title_str}
 
 | {row['Full Name']} ({row['Project Type']}), {row['E-mail']}
 
@@ -120,7 +121,7 @@ Figure 1: {fig_caption.strip()}
         amp_regex = re.compile(r'&amp;')
         unicode_regex = re.compile(r'&#(\d+);')
         def unicode_md_to_python(match: re.Match):
-            print(match)
+            # print(match)
             return chr(int(match.group(1)))
         md_string = re.sub(amp_regex, '&', md_string)
         md_string = re.sub(r'\\#', '#', md_string)

@@ -46,7 +46,7 @@ def check_aspect_ratio(img: wImg) -> (bool, str):
     aspect_ratio = img.size[0]/img.size[1]
 
     ideal_aspect_ratio = 35/45
-    if abs(aspect_ratio - ideal_aspect_ratio) > 0.001:
+    if abs(aspect_ratio - ideal_aspect_ratio) > 0.01:
         return ( False, (f'Your portrait photo has the wrong aspect ratio. '
                 f'Required:   w : h = 35 : 45. Your photo:   {img.size[0]} : {img.size[1]}. '
                 f'Please crop your photo until it is 35 by 45 mm, or something with the same aspect ratio.'
@@ -122,12 +122,13 @@ src_folder = './response_data/portraits_renamed/'
 dest_folder = './response_data/portraits_processed/'
 portrait_paths = glob(src_folder + '*')
 
-MODIFY_FILES = True 
+MODIFY_FILES = False 
 
 if MODIFY_FILES:
     init_folder('portraits_processed')
 
 ai_counter = 0
+png_counter = 0
 portrait_paths_sub = portrait_paths[:20]
 
 resolution_ids = []
@@ -135,8 +136,8 @@ resolution_errs = []
 aspect_ratios_ids = []
 aspect_ratios_errs = []
 print('Processing portraits...')
-for portrait_path in tqdm(portrait_paths):
-# for portrait_path in portrait_paths:
+# for portrait_path in tqdm(portrait_paths):
+for portrait_path in portrait_paths:
     path, extension = os.path.splitext(portrait_path)
     
     if extension == '.ai':
@@ -183,11 +184,15 @@ for portrait_path in tqdm(portrait_paths):
             if not valid_resolution:
                 resolution_ids.append(parse_id(portrait_file))
                 resolution_errs.append(err_msg)
+                
+                print(portrait_file, img.size[0])
            
             (valid_aspect_ratio, err_msg ) = check_aspect_ratio(img)
             if not valid_aspect_ratio:
                 aspect_ratios_ids.append(parse_id(portrait_file))
                 aspect_ratios_errs.append(err_msg)
+                
+                print(portrait_file, img.size[0]/img.size[1], img.size[0]/img.size[1] - 35/45)
             
             if (not valid_aspect_ratio) or (not valid_resolution):
                 continue
@@ -197,12 +202,13 @@ for portrait_path in tqdm(portrait_paths):
                 rescale_dpi(img)
                 # print(img.format)
                 if img.format == 'PNG':
-                    with img.convert('jpg', resolution=300) as converted:
-                        # converted.save(filename='converted.png')
-                        # img.format = 'JPG'
+                    with wImg(img, resolution=300) as jpg_img:
+                        jpg_img.compression_quality = 99
+                        jpg_img.format = 'JPG'
                         target_path = target_path.with_suffix('.jpg')
-                        
-                        converted.save(filename=target_path)
+                        # print(target_path)
+                        jpg_img.save(filename=target_path)
+                        png_counter += 1
                 else:
                     img.save(filename=target_path)
                 # 
@@ -222,4 +228,5 @@ print('\nDone processing portraits...')
 print( f'Detected {len(resolution_ids)} photos with low resolution.')
 print( f'Detected {len(aspect_ratios_ids)} wrong portrait aspect ratios.')
 print(f'Converted {ai_counter} .ai file(s) to .jpg')
+print(f'Converted {png_counter} .png file(s) to .jpg')
 # %%

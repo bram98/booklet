@@ -101,6 +101,7 @@ def write_caption_errors():
 src_folder = './response_data/figures_renamed/'
 dest_folder = './response_data/figures_processed/'
 figure_paths = glob(src_folder + '*')
+png_paths = glob(src_folder + '*.png')
 
 MODIFY_FILES = True 
 
@@ -108,7 +109,7 @@ if MODIFY_FILES:
     init_folder('figures_processed')
     
 
-ai_counter = 0
+png_counter = 0
 
 aspect_ratios_ids = []
 aspect_ratios_errs = []
@@ -117,11 +118,19 @@ figure_paths_valid = write_wrong_extensions_errors_and_return_valid()
 
 figure_paths_sub = figure_paths_valid[:]
 
-for figure_path in tqdm(figure_paths_sub):
-    path = Path(figure_path)
-    
-    dest_path = Path(dest_folder) / path.name
-    shutil.copyfile(figure_path, dest_path)
+for figure_path in tqdm(figure_paths):
+    src_path = Path(figure_path)
+    target_path = Path(dest_folder)/src_path.name
+    if 'png' in figure_path.lower():
+        with wImg(filename=src_path, resolution=300) as jpg_img:
+            jpg_img.compression_quality = 99
+            jpg_img.format = 'JPG'
+            target_path = target_path.with_suffix('.jpg')
+            # print(target_path)
+            jpg_img.save(filename=target_path)
+            png_counter += 1
+    else:
+        shutil.copyfile(figure_path, target_path)
     
     # if path.suffix.lower() in ['.ai', '.psd', '.svg']:
     #     print(path.name)
@@ -138,6 +147,8 @@ for figure_path in tqdm(figure_paths_sub):
     #     ai_counter += 1
 # for 
 print()
+
+print(f'Converted {png_counter} .png file(s) to .jpg')
 if MODIFY_FILES:
     write_caption_errors()
     
