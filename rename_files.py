@@ -34,6 +34,10 @@ def extract_file_solis_url(url):
     Extract the file name from the solislink as provided in the response form
     '''
     u = urlparse(url)
+    if u.scheme == '':
+        # not a link
+        return u.path
+
     if len(u.query) > 0 :
         # print(len(u.query))
         q = parse_qs( u.query ) 
@@ -150,7 +154,9 @@ for(ID, person) in tqdm(data.iterrows(), total=len(data)):
     '''
     Portraits
     '''
-    portrait_file = os.path.split(person['Photo of yourself'])[1]
+    # portrait_file = os.path.split(person['Photo of yourself'])[1]
+    # portrait_file = unquote(portrait_file)
+    portrait_file = extract_file_solis_url(person['Photo of yourself'])
     portrait_file = unquote(portrait_file)
     if MODIFY_FILES:
         copy_file('portraits','portraits_renamed', portrait_file, 'portrait', name)
@@ -168,18 +174,11 @@ for(ID, person) in tqdm(data.iterrows(), total=len(data)):
     
     reference_list = list(filter(reference_regex.search, proj_description_files))
     proj_description_list = [file for file in proj_description_files if not file in reference_list]
-    # print(list(proj_description_list))
-    # print(list(reference_list))
-    # print(f'{len(list(proj_description_list))} {len(list(reference_list))}')
-    # if '20 J' in name:
-    #     print(proj_description_list)
-    #     print(reference_list)
+
         
     if(len(proj_description_list)>=1):
         has_proj_description = True
         proj_description_file = proj_description_list[-1]
-        # if '20 J' in name:
-        #     print(proj_description_file)
     else:
         # sadly, one person did not upload a project description and I have to check for this
         has_proj_description = False 

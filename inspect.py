@@ -46,7 +46,20 @@ for (ID, person) in data.iterrows():
             counts[research_group][0] += 1
             
         counts[research_group][1] += 1
-            
+abbr_group = re.compile('\((.*?)\)')        
 for (research_group, count) in counts.items():
-    print(research_group[-4:-1], '\t\t', f'{count[0]}/{count[1]}' , '\t\t', f' {count[0]/count[1]*100:.3f}%' )
+    print(f'{abbr_group.findall(research_group)[0]:4s}' , '\t', f'{count[0]}/{count[1]}' , '\t\t', f' {count[0]/count[1]*100:.3f}%' )
     
+#%%
+
+'''
+multiple researcg groups
+'''
+memails = ['a.j.h.dekker@uu.nl',
+ 'm.bijl1@uu.nl',
+ 'g.h.a.schulpen@uu.nl',
+ 't.arens@uu.nl']
+
+for memail in memails:
+    person = data.loc[data['Email']==memail]
+    print(person['Full Name'].values[0], person['Research Group'].values[0])

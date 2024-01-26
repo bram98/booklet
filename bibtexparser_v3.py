@@ -94,7 +94,7 @@ class MyStyle(UnsrtStyle):
         ]
             
     def format_names(self, role, as_sentence=True):
-        formatted_names = short_names(role, max_names=3, sep=', ', sep2 = ' and ', last_sep=', and ')
+        formatted_names = short_names(role, max_names=1, sep=', ', sep2 = ' and ', last_sep=', and ')
 
         if as_sentence:
             return sentence [ formatted_names ]

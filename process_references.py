@@ -63,6 +63,11 @@ def check_page_range(pr):
 def escape_markdown(match: re.Match):
     return f'\&#{ord(match.group())};'
 
+def replace_accents_markdown(string: str):
+    non_alphanumeric = re.compile(r'([^a-zA-Z0-9\@\{\},=\n\ \t])', re.UNICODE)
+    string = re.sub( non_alphanumeric, escape_markdown, string )
+    return string
+
 def docxtobib(docx_file: str):
     docx_path = Path(docx_file)
     doc = Document(docx_file)
@@ -72,8 +77,7 @@ def docxtobib(docx_file: str):
     fullText = '\n'.join(fullText)
     # fullText2 = unidecode(fullText)
     # fullText2 = fullText2.replace('"','')
-    non_alphanumeric = re.compile(r'([^a-zA-Z0-9\@\{\},=\n\ ])', re.UNICODE)
-    fullText2 = re.sub( non_alphanumeric, escape_markdown, fullText )
+    fullText2 = replace_accents_markdown(fullText)
     # fullText2 = fullText
     if fullText2 != fullText:
         # print('Found unicode! \n', fullText)
@@ -107,10 +111,10 @@ def xlsx2bib(xlsx_file: str):
     with open(bib_file, 'w') as fh:
         for i, row in df.iterrows():
             try:
-                author = replace_accents(row['First author'].replace('&', chr(92)+'&').strip())
-                journal = replace_accents(try_convert(row, 'Journal', str).strip())
+                author = replace_accents_markdown(row['First author'].replace('&', chr(92)+'&').strip())
+                journal = replace_accents_markdown(try_convert(row, 'Journal', str).strip())
                 issue = try_convert(row, 'Issue', int)
-                pages = replace_accents( try_convert(row, 'page range', str).replace(emdash, '-').replace('-', '--').strip() )
+                pages = replace_accents_markdown( try_convert(row, 'page range', str).replace(emdash, '-').replace('-', '--').strip() )
                 if re.compile('\d').search(pages):
                     pages_str = f'pages={{{pages}}},\n'
                 else:
@@ -128,7 +132,11 @@ def xlsx2bib(xlsx_file: str):
             except Exception as e:
                 my_row = row
                 print(base_name, row, repr(e))
-                
+
+def cite_replace(match: re.Match):
+    global cite_counter       
+    cite_counter += 1
+    return f'[{cite_counter}]'
 
 #%%
 src_folder = './response_data/references_renamed/'
@@ -191,7 +199,7 @@ for bib_path in bib_paths:
     
     doc = Document(proj_description)
     # print( [len(p.text) for p in doc.paragraphs] )
-    paras = ''.join( [p.text for p in doc.paragraphs] )
+    paras = '###'.join( [p.text for p in doc.paragraphs] )
     
     # Find all references and then select the largest one.
     numbers = cite_sb_regex2.findall(paras)
@@ -204,15 +212,24 @@ for bib_path in bib_paths:
             citations = [citation for citation_list in cite_cites for citation in citation_list.split(',') ]
             # cite_cites = [citation for citation in citations.split(',') for citations in cite_cites]
             # print(citations)
+            cite_counter = 0
+            paras = cite_cite_regex.sub(cite_replace, paras)
         else:
             citations = ['*']
     else:
         largest_ref = np.max(numbers)
         citations = [f'ref{n}' for n in range(1, largest_ref + 1)]
     # print(citations)
-    if 'Itir' in person:
-        print(citations)
-        pp =bib_path
+    citations = [citation.strip() for citation in citations]
+    
+    cite_sb_period_regex = re.compile(r'\ ?(\[.*?\d+\D*?(\d+)?\])\.')
+    period_space_cite_regex = re.compile(r'\.\ (\[.*?\d+\D*?(\d+)?\])')
+    # print()
+    # print(paras)
+    paras = re.sub(cite_sb_period_regex, r'.\1', paras)
+    paras = re.sub(period_space_cite_regex, r'.\1', paras)
+    # if 'Jian' in person:
+    #     print(paras)
     try:
         make_bibliography(bib_path, dest_folder + bib_path.stem, citations=citations)
         pass
@@ -222,6 +239,15 @@ for bib_path in bib_paths:
     except Exception as e:
         print(person, bib_path, repr(e))
         # raise e
+    try:
+        paras_list = paras.split('###')
+        for index, para in enumerate(doc.paragraphs):
+            para.text = paras_list[index]
+        doc.save(proj_description)
+    except Exception as e:
+        print(person)
+        raise e
+        
 
 
 
