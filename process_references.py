@@ -239,7 +239,10 @@ for bib_path in bib_paths:
             citations = ['*']
     else:
         # Found numbers in text. Use largest number 
-        assert np.array_equal( numbers, sorted(numbers) )
+        try:
+            assert np.array_equal( numbers, sorted(numbers) )
+        except:
+            print(f'Error: sorted citations not same for {person}: {numbers} != {sorted(numbers)}')
         largest_ref = np.max(numbers)
         citations = [f'ref{n}' for n in range(1, largest_ref + 1)]
     # print(citations)
