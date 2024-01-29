@@ -147,7 +147,14 @@ print('Copying portraits, project descriptions, references and figures')
 
 no_proj_description_ids = []
 no_proj_description_errors = []
+group_regex = re.compile('\((.+?)\)')
 for(ID, person) in tqdm(data.iterrows(), total=len(data)):
+    
+    # Only do certain group to speed up the work
+    group_abbr = group_regex.search(person['Research Group']).group(1)
+    if not 'SCMB' in group_abbr:
+        continue
+    
     name = f"{ID} {person['Full Name']}" 
     name = unidecode(name)
     
