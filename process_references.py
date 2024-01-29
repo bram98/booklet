@@ -52,6 +52,7 @@ def write_errors_references(person_id, excel_file):
     write_errors('references', id_list, err_list)
 
 
+
 def check_page_range(pr):
     if is_any_real_numeric_dtype(type(pr)) and np.isnan(pr):
         return False
@@ -82,8 +83,6 @@ def docxtobib(docx_file: str):
         print('Found unicode! \n', Path(docx_file).stem)
     with open(docx_path.with_suffix('.bib'), 'w') as file:
         file.write(fullText2)
-
-
 
 def xlsx2bib(xlsx_file: str):
     global my_row
@@ -131,10 +130,32 @@ def xlsx2bib(xlsx_file: str):
                 my_row = row
                 print(base_name, row, repr(e))
 
-def cite_replace(match: re.Match):
+def cite_replace_sb(match: re.Match):
     global cite_counter       
     cite_counter += 1
     return f'[{cite_counter}]'
+
+def cite_replace_ref(match: re.Match):
+    global cite_counter       
+    cite_counter += 1
+    return f'ref{cite_counter}'
+def replace_cite_names_by_number_in_bib(bib_file: str, citations: list):
+    global cite_counter
+    with open(bib_file, 'r') as file:
+        content = file.read()
+    new_citations = []
+    
+    cite_counter = 0
+    for citation in citations:
+        (content, hits) = re.subn(citation, cite_replace_ref, content)
+        new_citations.append(f'ref{cite_counter}')
+        if hits != 1:
+            raise Exception(f'Could not find reference \'{citation}\' in file {bib_file}')
+    
+    with open(bib_file, 'w') as file:
+        file.write(content)
+    print(new_citations)
+    return new_citations
 
 #%%
 src_folder = './response_data/references_renamed/'
@@ -159,7 +180,7 @@ for reference_path in reference_paths[:]:
         dest_folder='references_processed',
         old_filename=ref_path.name,
         new_filename='references',
-        name = ref_name[11:]
+        name=ref_name[11:]
         )
     ref_path = Path(ref_path)
     print(ref_path)
@@ -173,6 +194,84 @@ for reference_path in reference_paths[:]:
     except Exception as e:
         print(f'[{ref_name[11:]}] {repr(e)}')
         
+#%%
+# src_folder = './response_data/references_renamed/'
+dest_folder = './response_data/references_processed/'
+bib_paths = glob(dest_folder + '*.bib')
+proj_description_paths = glob('./response_data/project_descriptions_processed/*')
+
+
+cite_sb_regex = re.compile(r'(\[.*?\d.*?\])') # Matches [1] and [ 1 ]
+cite_sb_regex2 = re.compile(r'\[.*?(\d+)\D*?(\d+)?\]') # Matches [1], [1, 2] and [8-10]
+cite_cite_regex = re.compile(r'\\cite\{(.+?)\}')
+for bib_path in bib_paths:
+    bib_path = Path(bib_path)
+    person = bib_path.stem[11:]
+
+    proj_descriptions = list(filter(lambda file: person in file, proj_description_paths ))
+    
+    if len(proj_descriptions) != 1:
+        # print(proj_descriptions)
+        raise Exception(f'[{person}] Found {len(proj_descriptions)} project descriptions!')
+        
+    proj_description = proj_descriptions[0]
+    
+    doc = Document(proj_description)
+    # print( [len(p.text) for p in doc.paragraphs] )
+    paras = '###'.join( [p.text for p in doc.paragraphs] )
+    
+    # Find all citations of the type [1]
+    numbers = cite_sb_regex2.findall(paras)
+    numbers = np.array(numbers, dtype=str).flatten()
+    numbers = np.array(list(filter(lambda x: x, numbers)), dtype=int)
+    if len(numbers) == 0:
+        cite_cites = cite_cite_regex.findall(paras)
+        print(cite_cites)
+        if len(cite_cites) > 0:
+            citations = [citation for citation_list in cite_cites for citation in citation_list.split(',') ]
+            
+            # Replace \cite{somecite} by [1] in text and by ref1 in .bib file
+            cite_counter = 0
+            paras = cite_cite_regex.sub(cite_replace_sb, paras)
+            
+            citations = replace_cite_names_by_number_in_bib(bib_path, citations)
+        else:
+            citations = ['*']
+    else:
+        # Found numbers in text. Use largest number 
+        assert np.array_equal( numbers, sorted(numbers) )
+        largest_ref = np.max(numbers)
+        citations = [f'ref{n}' for n in range(1, largest_ref + 1)]
+    # print(citations)
+    citations = [citation.strip() for citation in citations]
+    
+    cite_sb_period_regex = re.compile(r'\ ?(\[.*?\d+\D*?(\d+)?\])\.')
+    period_space_cite_regex = re.compile(r'\.\ (\[.*?\d+\D*?(\d+)?\])')
+    # print()
+    # print(paras)
+    if 'Wang' in person:
+        cit = citations
+        # print(cite_cite_regex.findall(paras), paras)
+    paras = re.sub(cite_sb_period_regex, r'.\1', paras)
+    paras = re.sub(period_space_cite_regex, r'.\1', paras)
+    
+    try:
+        make_bibliography(bib_path, dest_folder + bib_path.stem, citations=citations)
+        pass
+        # with open(dest_folder + bib_path.stem, 'rw') as file:
+        #     file.write(file.read())
+        
+    except Exception as e:
+        print(person, bib_path, repr(e))
+        # raise e
+    try:
+        paras_list = paras.split('###')
+        for index, para in enumerate(doc.paragraphs):
+            para.text = paras_list[index]
+        doc.save(proj_description)
+    except Exception as e:
+        print(person)
+        raise e
 # src_folder = './response_data/references_renamed/'
 dest_folder = './response_data/references_processed/'
 bib_paths = glob(dest_folder + '*.bib')
