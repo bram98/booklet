@@ -4,7 +4,6 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import PIL
 from  glob import glob
-import os
 import shutil
 from unidecode import unidecode
 from urllib.parse import urlparse, parse_qs, unquote
@@ -13,9 +12,11 @@ from tqdm import tqdm
 import json
 from fuzzywuzzy import fuzz
 from pathlib import Path
-from helper_functions import init_folder, copy_file, fuzzy_equal, write_errors, clear_errors 
+import os
 
 os.chdir(os.path.dirname(__file__))
+from manual_modifications import manual_modify
+from helper_functions import init_folder, copy_file, fuzzy_equal, write_errors, clear_errors 
 
 #%%
 
@@ -120,9 +121,8 @@ if EXTRACT_NEW_BATCH:
     move_files('project_descriptions', 'Question 3')
     print('Moved files from new_batch to project_descriptions')
     
-    
-    
-    
+#%%  
+manual_modify() 
 
 #%%
 # Read in the data as a pandas dataframe
