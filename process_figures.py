@@ -124,6 +124,8 @@ for figure_path in tqdm(figure_paths):
     if 'png' in figure_path.lower():
         with wImg(filename=src_path, resolution=300) as jpg_img:
             jpg_img.compression_quality = 99
+            img.background_color = Color('white')
+            img.alpha_channel = 'remove'
             jpg_img.format = 'JPG'
             target_path = target_path.with_suffix('.jpg')
             # print(target_path)

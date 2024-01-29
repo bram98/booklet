@@ -50,8 +50,6 @@ def write_errors_references(person_id, excel_file):
             err_list.append(f'Reference error. Column {i+1} contains some empty cells')
 
     write_errors('references', id_list, err_list)
-#%%
-
 
 
 def check_page_range(pr):
@@ -175,7 +173,6 @@ for reference_path in reference_paths[:]:
     except Exception as e:
         print(f'[{ref_name[11:]}] {repr(e)}')
         
-#%%
 # src_folder = './response_data/references_renamed/'
 dest_folder = './response_data/references_processed/'
 bib_paths = glob(dest_folder + '*.bib')

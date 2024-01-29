@@ -38,7 +38,7 @@ for i, row in df.iterrows():
         
         first_group = groups[0].split('(')[0].strip()
         group_abbr = group_regex.search(row["Research Group"]).group(1)
-        if not 'MCC' in group_abbr:
+        if not 'SCMB' in group_abbr:
             continue
         full_name = row['Full Name'].strip().split()
         id_and_name = f'{row["ID"]} {unidecode(row["Full Name"])}'

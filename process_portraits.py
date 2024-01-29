@@ -5,6 +5,7 @@ import os
 import shutil
 from wand.image import Image as wImg
 from wand.display import display
+from wand.color import Color
 import cv2 as cv
 import matplotlib.pyplot as plt
 from pdf2image import convert_from_path as pdf_read
@@ -111,6 +112,7 @@ if MODIFY_FILES:
     for png_file in tqdm(png_files):
         with wImg(filename=png_file, resolution=300) as img:
             img.compression_quality = 99
+            img.background_color = Color('white')
             jpg_file = Path(png_file).with_suffix('.jpg')
             # print(jpg_file)
             img.save(filename=jpg_file)

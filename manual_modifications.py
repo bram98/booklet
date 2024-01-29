@@ -98,9 +98,6 @@ set_entry_file('Sibylle Schwartmann', 'Project Description', 'project_descriptio
 set_entry('Sibylle Schwartmann', 'Project Title', 'Monitoring the Electrooxidation of Lignin Model Compounds with *in situ* ATR-IR spectroscopy')
 set_entry('Sibylle Schwartmann', 'Project Type', 'PhD')
 
-set_entry_file('Susana', 'Project Description', 'project_description 84 Susana Marin Aguilar.docx')
-set_entry_file('Susana', 'Figure (optional)', 'figure 84 Susana Marin Aguilar.pdf')
-set_entry_file('Susana', 'Photo of yourself', 'portrait 84 Susana Marin Aguilar.tiff')
 
 '''MCC'''
 
@@ -127,6 +124,16 @@ set_entry_file('Zixiong Wei', 'Project Description', 'project_description 123 Zi
 set_entry('Zixiong Wei', 'Project Type', 'PhD')
 set_entry('Zixiong Wei', 'Project Title', 'Machine Learning-based Multiscale Mechanical Simulations of Li/LLZO Interface in Solid-State Batteries for Improved Performance and Reliability')
 set_entry_file('Karan Kotalgi', 'Figure (optional)', 'figure 130 Karan Kotalgi.jpg')
+
+'''
+SCMB
+'''
+set_entry_file('Susana', 'Project Description', 'project_description 84 Susana Marin Aguilar.docx')
+set_entry_file('Susana', 'Figure (optional)', 'figure 84 Susana Marin Aguilar.pdf')
+set_entry_file('Susana', 'Photo of yourself', 'portrait 84 Susana Marin Aguilar.tiff')
+set_entry('Susana', 'Project Title', 'Simulations of colloidal particles with anisotropic interactions and shapes')
+set_entry('Susana', 'Project Type', 'postdoc')
+set_entry_file('Tjom Arens', 'Project Description', 'project_description 127 Tjom Arens.docx;references 127 Tjom Arens.xlsx')
 # # append_entry('Amanda van der Sijs', 'Project Description', './manual_files/project_description 86 Amanda van der Sijs.docx;./manual_files/references 86 Amanda van der Sijs.xlsx')
 # append_file_by_name('Amanda van der Sijs.xlsx', './manual_files', 'response_data/project_descriptions')
 # append_file_by_name('Amanda van der Sijs.docx', './manual_files', './response_data/project_descriptions')
@@ -147,11 +154,11 @@ data.to_excel('responses.xlsx')
 '''
 Run after rename_files
 '''
-md = Path()
-rd = Path('./response_data')
+# md = Path()
+# rd = Path('./response_data')
 
-data = pd.read_excel('responses.xlsx')
-data.set_index('ID', inplace=True)
+# data = pd.read_excel('responses.xlsx')
+# data.set_index('ID', inplace=True)
 
 
 
