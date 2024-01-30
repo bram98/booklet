@@ -30,13 +30,25 @@ def set_entry(name, column, new_value):
     
 def set_entry_file(name, column, new_value):
     global data
-    files = new_value.split(';')
-    files = ['../manual_files/' + file for file in files]
-    new_value = ';'.join(files)
-    # print(new_value)
+    
+    # Sanity check
+    if not name in new_value:
+        raise Exception(f'Set_entry_file error: {name} not in {new_value}')
+    
     if data['Full Name'].str.match( name ).sum() != 1:
         raise Exception(f'Could not find name {name}')
-    data.loc[ data['Full Name'].str.match( name ), column ] = new_value
+    person = data[data['Full Name'].str.match( name )].iloc[0]
+    
+    research_groups = person["Research Group"].split(';')
+    if len(research_groups) != 2:
+        raise Exception(f'{person.name} {person["Full Name"]} has multiple research groups')
+        
+    files = new_value.split(';')
+    files = [f'../manual_files/{research_groups[0]}/' + file for file in files]
+    
+    new_value = ';'.join(files)
+    
+    data.loc[person.name, column] = new_value
     
 def append_entry(name, column, new_value):
     global data
@@ -72,7 +84,7 @@ def append_file_by_name(name, src_dir, target_file):
     shutil.copy(src_file, target_file)
     print(f'Moved {src_file} to {target_file}')
 #%%
-if __name__ == 'main':
+if __name__ == '__main__':
     data = pd.read_excel('responses.xlsx')
     data.set_index('ID', inplace=True)
     
@@ -82,12 +94,13 @@ if __name__ == 'main':
     print(columns)
 #%%
 PROJ_DESCRIP = 'Project Description'
-CAPTION = 'Figure Caption (optional)'
+CAPTION = u'Figure Caption\xa0(optional)'
 TYPE = 'Project Type'
 TITLE = 'Project Title'
 PORTRAIT = 'Photo of yourself'
-
+FIGURE = 'Figure (optional)'
 def manual_modify():
+    global data
     '''
     Run before rename_files
     '''
@@ -98,7 +111,6 @@ def manual_modify():
     
     data_path = Path('responses.xlsx')
     
-    set_entry_file('Kirsten Siebers', 'Photo of yourself', 'KirstenSiebers_Kirsten Siebers.jpg')
     set_entry_file('Amanda van der Sijs', 'Project Description', 'project_description 86 Amanda van der Sijs.docx;references 86 Amanda van der Sijs.xlsx')
     
     set_entry_file('Sibylle Schwartmann', 'Project Description', 'project_description 98 Sibylle Schwartmann.docx')
@@ -125,7 +137,7 @@ def manual_modify():
     set_entry_file('Suzan Schoemaker', 'Project Description', 'project_description 21 Suzan Schoemaker.docx;references 21 Suzan Schoemaker.xlsx')
     set_entry('Suzan Schoemaker', 'Figure Caption (optional)', 'Main steps in methane decomposition. 1) Carbon supply: Methane adsorption and dissociation. Hz gas is released. 2) Carbon transport: C-atoms diffuse through or over the catalyst. 3) Formation: carbon nanostructures are formed. 4) Deactivation: formation of defective carbon lavers at the surface.')
     set_entry_file('George Tierney', 'Project Description', 'project_description 47 George Tierney.docx;references 47 George Tierney.xlsx')
-    set_entry('George Tierney', 'Project Type', 'postdoc')
+    set_entry('George Tierney', 'Project Type', 'Postdoc')
     set_entry_file('George Tierney', 'Figure (optional)', 'figure 47 George Tierney.jpg')
     set_entry_file('Zixiong Wei', 'Project Description', 'project_description 123 Zixiong Wei.docx;references 123 Zixiong Wei.xlsx')
     set_entry('Zixiong Wei', 'Project Type', 'PhD')
@@ -139,17 +151,44 @@ def manual_modify():
     set_entry_file('Susana', 'Figure (optional)', 'figure 84 Susana Marin Aguilar.pdf')
     set_entry_file('Susana', 'Photo of yourself', 'portrait 84 Susana Marin Aguilar.tiff')
     set_entry('Susana', 'Project Title', 'Simulations of colloidal particles with anisotropic interactions and shapes')
-    set_entry('Susana', 'Project Type', 'postdoc')
+    set_entry('Susana', 'Project Type', 'Postdoc')
     set_entry_file('Tjom Arens', 'Project Description', 'project_description 127 Tjom Arens.docx;references 127 Tjom Arens.xlsx')
     set_entry_file('Gerardo Campos-Villalobos', 'Project Description', 'project_description 91 Gerardo Campos-Villalobos.docx;references 91 Gerardo Campos-Villalobos.xlsx')
     set_entry('Gerardo Campos-Villalobos', CAPTION, 'Schematic representation of the process of coarse-graining a system of ligand-stabilized nanoparticles departing from a fine-grained representation.')
     set_entry('Gerardo Campos-Villalobos', TITLE, 'Utilizing Machine Learning for the Bottom-Up Coarse-Graining of Colloidal Systems')
-    set_entry('Gerardo Campos-Villalobos', TYPE, 'postdoc')
+    set_entry('Gerardo Campos-Villalobos', TYPE, 'Postdoc')
+    
+    '''
+    ICC
+    '''
+    set_entry_file('Bettina Baumgartner', PROJ_DESCRIP, 'project_description 54 Bettina Baumgartner.doc')
+    set_entry('Bettina Baumgartner', CAPTION, 'Outline of the experimental setup that comprises a Silicon ATR crystal coated with porous material, which is placed in a flow cell. Gases or liquids can be applied and a window allows top illumination for UV-vis spectroscopic reaction monitoring or initiation of photoreactions. ')
+    set_entry('Bettina Baumgartner', TITLE, 'Reaction monitoring in confined spaces using in situ spectroscopy')
+    set_entry('Bettina Baumgartner', TYPE, 'Postdoc')
+    set_entry_file('Floor Brzesowsky', PROJ_DESCRIP, 'project_description 38 Floor Brzesowsky.docx;references 38 Floor Brzesowsky.xlsx')
+    set_entry_file('Albaraa Falodah', PROJ_DESCRIP, 'project_description 60 Albaraa Falodah.docx;references 60 Albaraa Falodah.xlsx')
+    set_entry('Albaraa Falodah', CAPTION, 'The evolution of metallocene catalysts for polyolefin polymerization, shown through examples.')
+    set_entry_file('Disha Jain', PROJ_DESCRIP, 'project_description 131 Disha Jain.docx;references 131 Disha Jain.xlsx')
+    set_entry_file('Joyce Kromwijk', PROJ_DESCRIP, 'project_description 55 Joyce Kromwijk.docx;references 55 Joyce Kromwijk.xlsx')
+    set_entry('Joyce Kromwijk', TITLE, 'Two-step Thermochemical CO2 Hydrogenation Toward Aromatics')
+    set_entry('Joyce Kromwijk', TYPE, 'PhD')
+    set_entry_file('Sebastian Rejman', PROJ_DESCRIP, 'project_description 94 Sebastian Rejman.docx;references 94 Sebastian Rejman.xlsx')
+    set_entry_file('Kirsten Siebers', PROJ_DESCRIP, 'project_description 1 Kirsten Siebers.docx;references 1 Kirsten Siebers.xlsx')
+    set_entry_file('Kirsten Siebers', PORTRAIT, 'KirstenSiebers_Kirsten Siebers.jpg')
+    set_entry_file('Chunning Sun', PROJ_DESCRIP, 'project_description 120 Chunning Sun.docx')
+    set_entry('Chunning Sun', TITLE, 'Converting chlorinated products into higher value chemicals')
+    set_entry('Chunning Sun', TYPE, 'Postdoc')
+    set_entry_file('Xiang Yu', PROJ_DESCRIP, 'project_description 111 Xiang Yu.docx')
+    set_entry('Xiang Yu', TITLE, 'Towards an atom-level design and understanding of heterogeneous catalysts for environmental remediations')
+    set_entry('Xiang Yu', TYPE, 'PhD')
+
+    
+    
     
     data_path.replace(data_path.with_stem('responses_old'))
     data.to_excel('responses.xlsx')
     
-if __name__ == 'main':
+if __name__ == '__main__':
     manual_modify()
 #%%
 
