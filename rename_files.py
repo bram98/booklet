@@ -152,8 +152,10 @@ for(ID, person) in tqdm(data.iterrows(), total=len(data)):
     
     # Only do certain group to speed up the work
     group_abbr = group_regex.search(person['Research Group']).group(1)
-    if not 'SCMB' in group_abbr:
+    if not 'ICC' in group_abbr:
         continue
+    # if not ID == 80:
+    #     continue
     
     name = f"{ID} {person['Full Name']}" 
     name = unidecode(name)
@@ -199,31 +201,6 @@ for(ID, person) in tqdm(data.iterrows(), total=len(data)):
     else:
         has_references = False
         reference_file = ''
-        
-    
-    # print(proj_description_file, '\n', reference_file, '\n')
-    
-    # if len(proj_description_files)== 1:
-    #     if reference_regex.search(proj_description_files[0]) is None:
-    #         # no references
-    #         proj_description_file = proj_description_files[0]
-    #         has_proj_description = True
-    #         has_references = False
-    #     else: 
-    #         # no project description (sigh)
-    #         ref_file = proj_description_files[0]
-    #         has_proj_description = False
-    #         has_references = True
-    #         no_proj_description_ids.append(ID)
-    #         no_proj_description_errors.append(('You have not provided a project description. '
-    #                                            'Please provide a project description as specified on the form.'))
-    # elif len(proj_description_files) == 2:
-        
-    #     # references
-    #     proj_description_file, ref_file, has_references = separate_projdescription_and_references(
-    #         proj_description_files, 
-    #         reference_regex)
-    #     has_proj_description = True
 
     proj_description_file = unquote(proj_description_file)  
     

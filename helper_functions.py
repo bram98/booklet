@@ -96,6 +96,36 @@ def parse_id(filename: str) -> int:
     only_numbers = re.compile(r'\d+')
     return int(only_numbers.search(filename)[0])
 
+def valid_citation_sequence(l:list):
+    '''
+    Assures list starts with 1 and contains only integers 1 <= x <= max(l).
+    '''
+    if len(l) == 0:
+        return True
+    
+    # Must start at one
+    if l[0] != 1:
+        return False
+    
+    max_ = max(l)
+    
+    for elem in l:
+        if not 1 <= elem <= max_ and type(elem) is int:
+            return False
+    return True
+    # if len(l) == 1:
+    #     return True
+    
+    # for i in range(1, len(l)):
+    #     if l[i] == max_:
+    #         # Reached max, we are safe now as long as the remaining integers are between 1 and max
+    #         return True
+        
+    #     # Assure stricly increasing function
+    #     if not l[i] > l[i-1]:
+    #         return False
+    # # return True
+
 latexAccents = [
   [ u"à", "\\`a" ], # Grave accent
   [ u"è", "\\`e" ],

@@ -15,11 +15,11 @@ from pandas.api.types import is_any_real_numeric_dtype
 from pathlib import Path
 from docx import Document
 
-from helper_functions import init_folder, parse_id, copy_file, fuzzy_equal, replace_accents
+os.chdir(os.path.dirname(__file__))
+from helper_functions import init_folder, parse_id, copy_file, fuzzy_equal, replace_accents, valid_citation_sequence, write_errors
 import bibtexparser_v3
 from bibtexparser_v3 import make_bibliography
 
-os.chdir(os.path.dirname(__file__))
 #%%
 # Read in the data as a pandas dataframe
 data = pd.read_excel('responses.xlsx')
@@ -63,7 +63,8 @@ def escape_markdown(match: re.Match):
     return f'\&#{ord(match.group())};'
 
 def replace_accents_markdown(string: str):
-    non_alphanumeric = re.compile(r'([^a-zA-Z0-9\@\{\},=\n\ \t])', re.UNICODE)
+    # Don't replace the following accents; these will break the Bib parsing
+    non_alphanumeric = re.compile(r'([^a-zA-Z0-9\@\{\},=\n\ \t\-])', re.UNICODE)
     string = re.sub( non_alphanumeric, escape_markdown, string )
     return string
 
@@ -85,14 +86,18 @@ def docxtobib(docx_file: str):
         file.write(fullText2)
 
 def xlsx2bib(xlsx_file: str):
-    global my_row
+    global df_
     # Replace file extension
     base_name = splitext(xlsx_file)[0]
     bib_file = base_name + '.bib'
-
+    
     # Parse excel file
-    df = pd.read_excel(xlsx_file).sort_values(by='Number')
-
+    df = pd.read_excel(xlsx_file)
+    df = df.rename({'number':'Number'}, axis='columns')
+    df = df.sort_values(by='Number')
+    if '38 Floor' in base_name:
+        print(base_name)
+        df_ = df.copy()
     def try_convert(row, column_name, type_):
         try:
             result = type_(row.filter(regex=re.compile(column_name, flags=re.I)).iloc[0])
@@ -131,22 +136,43 @@ def xlsx2bib(xlsx_file: str):
                 print(base_name, row, repr(e))
 
 def cite_replace_sb(match: re.Match):
-    global cite_counter       
-    cite_counter += 1
-    return f'[{cite_counter}]'
+    '''
+    Replaces \cite{somecite} in the text by [1] and keeps track in cite_dict. Helper function to be used in regex.
+    Make sure you set cite_counter to zero and cite_dict to {} before using
+    '''
+    global cite_counter, cite_dict   
+    
+    citation_name = match.groups(0)[0]
+    if citation_name in cite_dict:
+        result = cite_dict[citation_name]
+        return f'[{result}]'
+    else:
+        cite_counter += 1   
+        cite_dict[citation_name] = cite_counter
+        return f'[{cite_counter}]'
+    
 
 def cite_replace_ref(match: re.Match):
-    global cite_counter       
-    cite_counter += 1
-    return f'ref{cite_counter}'
-def replace_cite_names_by_number_in_bib(bib_file: str, citations: list):
     global cite_counter
+    return f'ref{cite_counter}'
+
+def replace_cite_names_by_number(bib_file: str, text: str) -> tuple[str, list[str]]:
+    '''
+    Replaces all occurences of \cite{somecite} by [1] in text. Also replace occurences
+    of somecite by ref1 in corresponding bibfile.
+    '''
+    global cite_counter, cite_cite_regex, cite_dict
+    
+    cite_counter = 0
+    cite_dict = {}
+    text_replaced = cite_cite_regex.sub(cite_replace_sb, text)
     with open(bib_file, 'r') as file:
         content = file.read()
     new_citations = []
     
     cite_counter = 0
-    for citation in citations:
+    for (citation, citation_number) in cite_dict.items():
+        cite_counter = citation_number
         (content, hits) = re.subn(citation, cite_replace_ref, content)
         new_citations.append(f'ref{cite_counter}')
         if hits != 1:
@@ -154,8 +180,7 @@ def replace_cite_names_by_number_in_bib(bib_file: str, citations: list):
     
     with open(bib_file, 'w') as file:
         file.write(content)
-    print(new_citations)
-    return new_citations
+    return (text_replaced, new_citations)
 
 #%%
 src_folder = './response_data/references_renamed/'
@@ -202,7 +227,7 @@ proj_description_paths = glob('./response_data/project_descriptions_processed/*'
 
 
 cite_sb_regex = re.compile(r'(\[.*?\d.*?\])') # Matches [1] and [ 1 ]
-cite_sb_regex2 = re.compile(r'\[.*?(\d+)\D*?(\d+)?\]') # Matches [1], [1, 2] and [8-10]
+cite_sb_regex2 = re.compile(r'\[.*?(\d+)\D*?(\d+)?.*?\]') # Matches [1], [1, 2] and [8-10]
 cite_cite_regex = re.compile(r'\\cite\{(.+?)\}')
 for bib_path in bib_paths:
     bib_path = Path(bib_path)
@@ -231,18 +256,17 @@ for bib_path in bib_paths:
             citations = [citation for citation_list in cite_cites for citation in citation_list.split(',') ]
             
             # Replace \cite{somecite} by [1] in text and by ref1 in .bib file
-            cite_counter = 0
-            paras = cite_cite_regex.sub(cite_replace_sb, paras)
-            
-            citations = replace_cite_names_by_number_in_bib(bib_path, citations)
+        
+            (paras, citations) = replace_cite_names_by_number(bib_path, paras)
         else:
             citations = ['*']
     else:
         # Found numbers in text. Use largest number 
         try:
-            assert np.array_equal( numbers, sorted(numbers) )
+            assert valid_citation_sequence(numbers)
         except:
-            print(f'Error: sorted citations not same for {person}: {numbers} != {sorted(numbers)}')
+            print(f'Error: citations not a valid sequence{person}: {numbers}')
+            print(paras)
         largest_ref = np.max(numbers)
         citations = [f'ref{n}' for n in range(1, largest_ref + 1)]
     # print(citations)
@@ -275,78 +299,6 @@ for bib_path in bib_paths:
     except Exception as e:
         print(person)
         raise e
-# src_folder = './response_data/references_renamed/'
-dest_folder = './response_data/references_processed/'
-bib_paths = glob(dest_folder + '*.bib')
-proj_description_paths = glob('./response_data/project_descriptions_processed/*')
-
-
-cite_sb_regex = re.compile(r'(\[.*?\d.*?\])') # Matches [1] and [ 1 ]
-cite_sb_regex2 = re.compile(r'\[.*?(\d+)\D*?(\d+)?\]') # Matches [1], [1, 2] and [8-10]
-cite_cite_regex = re.compile(r'\\cite\{(.+?)\}')
-for bib_path in bib_paths:
-    bib_path = Path(bib_path)
-    person = bib_path.stem[11:]
-
-    proj_descriptions = list(filter(lambda file: person in file, proj_description_paths ))
-    
-    if len(proj_descriptions) != 1:
-        # print(proj_descriptions)
-        raise Exception(f'[{person}] Found {len(proj_descriptions)} project descriptions!')
-        
-    proj_description = proj_descriptions[0]
-    
-    doc = Document(proj_description)
-    # print( [len(p.text) for p in doc.paragraphs] )
-    paras = '###'.join( [p.text for p in doc.paragraphs] )
-    
-    # Find all references and then select the largest one.
-    numbers = cite_sb_regex2.findall(paras)
-    numbers = np.array(numbers, dtype=str).flatten()
-    numbers = np.array(list(filter(lambda x: x, numbers)), dtype=int)
-    if len(numbers) == 0:
-        cite_cites = cite_cite_regex.findall(paras)
-        if len(cite_cites) > 0:
-            # citations = [citation.split(',') for citation in cite_cites]
-            citations = [citation for citation_list in cite_cites for citation in citation_list.split(',') ]
-            # cite_cites = [citation for citation in citations.split(',') for citations in cite_cites]
-            # print(citations)
-            cite_counter = 0
-            paras = cite_cite_regex.sub(cite_replace, paras)
-        else:
-            citations = ['*']
-    else:
-        largest_ref = np.max(numbers)
-        citations = [f'ref{n}' for n in range(1, largest_ref + 1)]
-    # print(citations)
-    citations = [citation.strip() for citation in citations]
-    
-    cite_sb_period_regex = re.compile(r'\ ?(\[.*?\d+\D*?(\d+)?\])\.')
-    period_space_cite_regex = re.compile(r'\.\ (\[.*?\d+\D*?(\d+)?\])')
-    # print()
-    # print(paras)
-    paras = re.sub(cite_sb_period_regex, r'.\1', paras)
-    paras = re.sub(period_space_cite_regex, r'.\1', paras)
-    # if 'Jian' in person:
-    #     print(paras)
-    try:
-        make_bibliography(bib_path, dest_folder + bib_path.stem, citations=citations)
-        pass
-        # with open(dest_folder + bib_path.stem, 'rw') as file:
-        #     file.write(file.read())
-        
-    except Exception as e:
-        print(person, bib_path, repr(e))
-        # raise e
-    try:
-        paras_list = paras.split('###')
-        for index, para in enumerate(doc.paragraphs):
-            para.text = paras_list[index]
-        doc.save(proj_description)
-    except Exception as e:
-        print(person)
-        raise e
-        
 
 
 

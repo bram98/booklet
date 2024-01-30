@@ -38,7 +38,7 @@ for i, row in df.iterrows():
         
         first_group = groups[0].split('(')[0].strip()
         group_abbr = group_regex.search(row["Research Group"]).group(1)
-        if not 'SCMB' in group_abbr:
+        if not 'ICC' in group_abbr:
             continue
         full_name = row['Full Name'].strip().split()
         id_and_name = f'{row["ID"]} {unidecode(row["Full Name"])}'
@@ -67,12 +67,13 @@ for i, row in df.iterrows():
         else:
             daily_str = f'\n| Daily supervisor(s):{tab}{row["Daily Supervisor(s) (optional)"]}\n'
         project_title_str = row['Project Title'] if not row['Project Title'] is np.nan else ''
+        sponsor_str = row['Sponsor(s)'] if not row['Sponsor(s)'] is np.nan else '-'
         md_string += f"""\
 {project_title_str}
 
 | {row['Full Name']} ({row['Project Type']}), {row['E-mail']}
 
-| Sponsor:{tab*2}{row['Sponsor(s)']}
+| Sponsor:{tab*2}{sponsor_str}
 | Supervisor(s):{tab}{row['Supervisor(s)']}{daily_str}
 | Keyword(s):{tab*2}{row['Keywords']}
 
@@ -100,8 +101,10 @@ for i, row in df.iterrows():
         
         # print(md_string)
         fig_caption = row['Figure Caption (optional)']
+        caption_regex = re.compile('fig(?:ure)?[\ \.]*1[\ \:\.]*', flags=re.I)
         if not (is_any_real_numeric_dtype(type(fig_caption)) and np.isnan(fig_caption)):
-            fig_caption = fig_caption.removeprefix('Figure 1').removeprefix('figure 1').removeprefix(':').removeprefix('.')
+            # fig_caption = fig_caption.removeprefix('Figure 1').removeprefix('figure 1').removeprefix(':').removeprefix('.')
+            fig_caption = re.sub(caption_regex, '', fig_caption)
             md_string += f"""
     
 Figure 1: {fig_caption.strip()}
@@ -120,14 +123,17 @@ Figure 1: {fig_caption.strip()}
         
         amp_regex = re.compile(r'&amp;')
         unicode_regex = re.compile(r'&#(\d+);')
+        superscript_references = re.compile(r'\^(\[.*?\d+\D*?\d+?.*?\])\^')
+        
         def unicode_md_to_python(match: re.Match):
             # print(match)
             return chr(int(match.group(1)))
         md_string = re.sub(amp_regex, '&', md_string)
         md_string = re.sub(r'\\#', '#', md_string)
         md_string = re.sub(unicode_regex, unicode_md_to_python, md_string)
-        if 'Jan' in full_name:
-            print(file_src)
+        md_string = re.sub(superscript_references, r'\1', md_string)
+        # if 'Jan' in full_name:
+        #     print(file_src)
         if MODIFY_FILES:
             with open(outputfile_md, 'w', encoding="utf-8") as file:
                 file.write(md_string)

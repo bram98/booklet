@@ -90,7 +90,7 @@ if MODIFY_FILES:
     convert_doc_to_docx_windows()
     write_file_type_errors()
 #%%
-filenames = glob('response_data/project_descriptions_renamed/*.docx')
+filenames = glob('response_data/project_descriptions_processed/*.docx')
 
 
 # reference_regex = re.compile(r'(^\[\d\])|references:?', flags=re.M|re.I)
@@ -104,7 +104,12 @@ i=0
 for filename in filenames[:]:
     doc = Document(filename)
     # print( [len(p.text) for p in doc.paragraphs] )
+    if not '69' in filename:
+        continue
+    
     paras = [p.text for p in doc.paragraphs]
+    paras = '###'.join(paras)
+    print(paras)
     # print(i)
     i+=1
     for para in paras:
@@ -114,7 +119,7 @@ for filename in filenames[:]:
             # print(para)
             # print(reference_regex.search(para)[0])
             # print(Path(filename).name)
-            ref_list.append(get_id(filename))
+            ref_list.append(parse_id(filename))
             # print('')
             # print(len(para))
             break
