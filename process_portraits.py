@@ -95,10 +95,6 @@ if MODIFY_FILES:
         target_path = Path(dest_folder)/src_path.name
         shutil.copy(src_path, target_path)
 
-#%%
-MODIFY_FILES = True
-
-if MODIFY_FILES:
     ai_files = glob(dest_folder + '*.ai')
     print('Converting .ai files...')
     for ai_file in tqdm(ai_files):
@@ -106,8 +102,8 @@ if MODIFY_FILES:
     print()
     print(f'Done converting {len(ai_files)} .ai files')
     
-    png_files = glob(dest_folder + '*.png')
     
+    png_files = glob(dest_folder + '*.png')
     print('Converting .png files...')
     for png_file in tqdm(png_files):
         with wImg(filename=png_file, resolution=300) as img:

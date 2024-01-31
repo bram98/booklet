@@ -11,11 +11,15 @@ from pandas.api.types import is_any_real_numeric_dtype
 import os
 import re
 from pathlib import Path
+from titlecase import titlecase
 
 from docx import Document
 from docx.shared import Pt
 
 os.chdir(os.path.dirname(__file__))
+#%%
+def detect_nan(text, default=''):
+    return text if not text is np.nan else default
 #%%
 df = pd.read_excel('responses.xlsx')
 
@@ -24,7 +28,7 @@ first = f''
 last = f''
 
 MODIFY_FILES = True
-
+ # or not 'Gerardo' in row['Full Name']
 group_regex = re.compile('\((.+?)\)')
 # For each response, collect everything in a folder for Conny
 # for i, row in df.head(2).iterrows(): 
@@ -38,7 +42,7 @@ for i, row in df.iterrows():
         
         first_group = groups[0].split('(')[0].strip()
         group_abbr = group_regex.search(row["Research Group"]).group(1)
-        if not 'ICC' in group_abbr:
+        if not 'SCMB' in group_abbr:
             continue
         full_name = row['Full Name'].strip().split()
         id_and_name = f'{row["ID"]} {unidecode(row["Full Name"])}'
@@ -66,16 +70,20 @@ for i, row in df.iterrows():
             daily_str =''
         else:
             daily_str = f'\n| Daily supervisor(s):{tab}{row["Daily Supervisor(s) (optional)"]}\n'
-        project_title_str = row['Project Title'] if not row['Project Title'] is np.nan else ''
-        sponsor_str = row['Sponsor(s)'] if not row['Sponsor(s)'] is np.nan else '-'
+        project_title_str = detect_nan(row['Project Title'])
+        full_name_str = re.sub('dr\.?\s?', '', row['Full Name'], flags=re.IGNORECASE)
+        sponsor_str = detect_nan(row['Sponsor(s)'], default='-')
+        # project_title_str =  if not row['Project Title'] is np.nan else ''
+        # sponsor_str = row['Sponsor(s)'] if not row['Sponsor(s)'] is np.nan else '-'
+        keyword_str = titlecase(detect_nan(row['Keywords']))
         md_string += f"""\
 {project_title_str}
 
-| {row['Full Name']} ({row['Project Type']}), {row['E-mail']}
+| {full_name_str} ({row['Project Type']}), {row['E-mail']}
 
 | Sponsor:{tab*2}{sponsor_str}
 | Supervisor(s):{tab}{row['Supervisor(s)']}{daily_str}
-| Keyword(s):{tab*2}{row['Keywords']}
+| Keyword(s):{tab*2}{keyword_str}
 
 """
         file_src = glob(f'response_data/project_descriptions_processed/project_description {id_and_name}.*')[0]
@@ -123,7 +131,7 @@ Figure 1: {fig_caption.strip()}
         
         amp_regex = re.compile(r'&amp;')
         unicode_regex = re.compile(r'&#(\d+);')
-        superscript_references = re.compile(r'\^(\[.*?\d+\D*?\d+?.*?\])\^')
+        superscript_references = re.compile(r'\^(\\\[.*?(?:\d+)(?:(?:\D{1,3})?(?:\d+))*.*?\\\])\^') # Matches ^\[1,2,3\]^, which is usually how superscript is defined in markdown
         
         def unicode_md_to_python(match: re.Match):
             # print(match)
@@ -131,9 +139,10 @@ Figure 1: {fig_caption.strip()}
         md_string = re.sub(amp_regex, '&', md_string)
         md_string = re.sub(r'\\#', '#', md_string)
         md_string = re.sub(unicode_regex, unicode_md_to_python, md_string)
-        md_string = re.sub(superscript_references, r'\1', md_string)
-        # if 'Jan' in full_name:
-        #     print(file_src)
+        # md_string = re.sub(superscript_references, r'\1', md_string)
+        # if 'Gerardo' in full_name:
+        #     s = md_string
+        #     print(md_string)
         if MODIFY_FILES:
             with open(outputfile_md, 'w', encoding="utf-8") as file:
                 file.write(md_string)

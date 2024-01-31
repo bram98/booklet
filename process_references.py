@@ -86,7 +86,7 @@ def docxtobib(docx_file: str):
         file.write(fullText2)
 
 def xlsx2bib(xlsx_file: str):
-    global df_
+    global df_, s, s2
     # Replace file extension
     base_name = splitext(xlsx_file)[0]
     bib_file = base_name + '.bib'
@@ -95,9 +95,6 @@ def xlsx2bib(xlsx_file: str):
     df = pd.read_excel(xlsx_file)
     df = df.rename({'number':'Number'}, axis='columns')
     df = df.sort_values(by='Number')
-    if '38 Floor' in base_name:
-        print(base_name)
-        df_ = df.copy()
     def try_convert(row, column_name, type_):
         try:
             result = type_(row.filter(regex=re.compile(column_name, flags=re.I)).iloc[0])
@@ -108,12 +105,16 @@ def xlsx2bib(xlsx_file: str):
             return ''
         
     emdash= u'\u2014'
-       # number={{{int(row['Issue']) if not np.isnan(row['Issue']) else ''}}},
+    
+    
+    et_al_regex = re.compile('(?<!and)\s*?(\,?\s?et al\.?)')
+
     # For each row in the xlsx file, generated an entry in the bib file
     with open(bib_file, 'w') as fh:
         for i, row in df.iterrows():
             try:
                 author = replace_accents_markdown(row['First author'].replace('&', chr(92)+'&').strip())
+                author = re.sub(et_al_regex, r' and \1', author)  # convert 'et al'  into separate author, which will then be removed and replaced by et al because only 1 author is removed.
                 journal = replace_accents_markdown(try_convert(row, 'Journal', str).strip())
                 issue = try_convert(row, 'Issue', int)
                 pages = replace_accents_markdown( try_convert(row, 'page range', str).replace(emdash, '-').replace('-', '--').strip() )
@@ -123,13 +124,14 @@ def xlsx2bib(xlsx_file: str):
                     pages_str = ''
                     print(pages, try_convert(row, 'page range', str))#, row.filter(regex=re.compile('pages', flags=re.I)).iloc[0])
                 
-                fh.write(f"""@article{{ref{row['Number']},
-        author={{{author}}},
-        journal={{{journal}}},
-        number={{{issue}}},
-        {pages_str}
-        year={{{try_convert(row, 'year', str)}}},
-    }}
+                fh.write(f"""
+@article{{ref{row['Number']},
+    author={{{author}}},
+    journal={{{journal}}},
+    number={{{issue}}},
+    {pages_str}
+    year={{{try_convert(row, 'year', str)}}},
+}}
                 """)
             except Exception as e:
                 my_row = row
@@ -227,7 +229,8 @@ proj_description_paths = glob('./response_data/project_descriptions_processed/*'
 
 
 cite_sb_regex = re.compile(r'(\[.*?\d.*?\])') # Matches [1] and [ 1 ]
-cite_sb_regex2 = re.compile(r'\[.*?(\d+)\D*?(\d+)?.*?\]') # Matches [1], [1, 2] and [8-10]
+# cite_sb_regex2 = re.compile(r'\[.*?(\d+)\D*?(\d+)?.*?\]') # Matches [1], [1, 2] and [8-10]
+cite_sb_regex2 = re.compile(r'\[.*?(\d+)(?:(?:\D{1,3})?(\d+))*.*?\]') # Matches [1], [1, 2, 3] and [8-10]. Captures first and last number.
 cite_cite_regex = re.compile(r'\\cite\{(.+?)\}')
 for bib_path in bib_paths:
     bib_path = Path(bib_path)

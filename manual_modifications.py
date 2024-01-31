@@ -152,11 +152,18 @@ def manual_modify():
     set_entry_file('Susana', 'Photo of yourself', 'portrait 84 Susana Marin Aguilar.tiff')
     set_entry('Susana', 'Project Title', 'Simulations of colloidal particles with anisotropic interactions and shapes')
     set_entry('Susana', 'Project Type', 'Postdoc')
+    set_entry('Vincent Rudolf ', 'Daily Supervisor(s) (optional)', np.nan)
     set_entry_file('Tjom Arens', 'Project Description', 'project_description 127 Tjom Arens.docx;references 127 Tjom Arens.xlsx')
     set_entry_file('Gerardo Campos-Villalobos', 'Project Description', 'project_description 91 Gerardo Campos-Villalobos.docx;references 91 Gerardo Campos-Villalobos.xlsx')
     set_entry('Gerardo Campos-Villalobos', CAPTION, 'Schematic representation of the process of coarse-graining a system of ligand-stabilized nanoparticles departing from a fine-grained representation.')
     set_entry('Gerardo Campos-Villalobos', TITLE, 'Utilizing Machine Learning for the Bottom-Up Coarse-Graining of Colloidal Systems')
     set_entry('Gerardo Campos-Villalobos', TYPE, 'Postdoc')
+    set_entry_file('Yi-Yun', PROJ_DESCRIP, 'project_description 115 Yi-Yun Lin.docx;references 115 Yi-Yun Lin.xlsx')
+    set_entry_file('Sander Vonk', PROJ_DESCRIP, 'project_description 99 Sander Vonk.docx;references 99 Sander Vonk.xlsx')
+    set_entry('Sander Vonk', TITLE, "Investigating Blinking in Colloidal Quantum Dots: Insights and Strategies for Controlled Emission") # created with Chat GPT
+    set_entry('Sander Vonk', TYPE, 'PhD')
+    set_entry('Rodolfo Subert', CAPTION, 'a)-b) Section and top view of a liquid crystal skyrmion in a system of hard banana particles. c) Hexagonal lattice of half skyrmions in a system of hard banana particles.')
+    
     
     '''
     ICC
