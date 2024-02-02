@@ -150,7 +150,7 @@ for(ID, person) in tqdm(data.iterrows(), total=len(data)):
     
     # Only do certain group to speed up the work
     group_abbr = group_regex.search(person['Research Group']).group(1)
-    if not 'SCMB' in group_abbr:
+    if not 'SCMB' in group_abbr and False:
         continue
     # if not ID == 80:
     #     continue
