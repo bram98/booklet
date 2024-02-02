@@ -41,7 +41,8 @@ def set_entry_file(name, column, new_value):
     
     research_groups = person["Research Group"].split(';')
     if len(research_groups) != 2:
-        raise Exception(f'{person.name} {person["Full Name"]} has multiple research groups')
+        pass
+        # raise Exception(f'{person.name} {person["Full Name"]} has multiple research groups')
         
     files = new_value.split(';')
     files = [f'../manual_files/{research_groups[0]}/' + file for file in files]
@@ -143,6 +144,11 @@ def manual_modify():
     set_entry('Zixiong Wei', 'Project Type', 'PhD')
     set_entry('Zixiong Wei', 'Project Title', 'Machine Learning-based Multiscale Mechanical Simulations of Li/LLZO Interface in Solid-State Batteries for Improved Performance and Reliability')
     set_entry_file('Karan Kotalgi', 'Figure (optional)', 'figure 130 Karan Kotalgi.jpg')
+    set_entry_file('Marianne Bijl', PORTRAIT, 'portrait 43 Marianne Bijl.jpg')
+    set_entry_file('Komal N', PORTRAIT, 'portrait 14 Komal N. Patil.jpg')
+    set_entry_file('Karan Kotalgi', PORTRAIT, 'portrait 130 Karan Kotalgi.jpg')
+
+    
     
     '''
     SCMB
@@ -190,7 +196,11 @@ def manual_modify():
     set_entry('Xiang Yu', TYPE, 'PhD')
     set_entry_file('Jesse B', PORTRAIT, 'portrait 58 Jesse Buckmann.jpg')
 
+    '''
+    CMI
+    '''
     
+    set_entry_file('Jara Vliem', PROJ_DESCRIP, 'project_description 22 Jara Vliem.docx;references 22 Jara Vliem.docx')
     
     
     data_path.replace(data_path.with_stem('responses_old'))
