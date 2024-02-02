@@ -1,11 +1,10 @@
 conda create -n booklet python=3.10 anaconda
 conda activate booklet
-conda install -c conda-forge unidecode opencv pdf2image pybtex python-docx fuzzywuzzy, pypandoc, titlecase
+conda install -c conda-forge unidecode opencv pdf2image pybtex python-docx fuzzywuzzy pypandoc titlecase
 conda install -c anaconda pywin32
+pip install Wand doc2docx htmldocx xlsxwriter
 #conda install conda-forge::certifi
 #pip install ImageMagic
-pip install Wand
+
 #pip install -U wdbibtex
-pip install pip-system-certs
-pip install doc2docx
-pip install htmldocx
+#pip install pip-system-certs

@@ -1,8 +1,6 @@
 #%%
 import numpy as np
 import pandas as pd
-import matplotlib.pyplot as plt
-import PIL
 from  glob import glob
 import shutil
 from unidecode import unidecode
