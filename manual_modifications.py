@@ -188,6 +188,7 @@ def manual_modify():
     set_entry_file('Xiang Yu', PROJ_DESCRIP, 'project_description 111 Xiang Yu.docx')
     set_entry('Xiang Yu', TITLE, 'Towards an atom-level design and understanding of heterogeneous catalysts for environmental remediations')
     set_entry('Xiang Yu', TYPE, 'PhD')
+    set_entry_file('Jesse B', PORTRAIT, 'portrait 58 Jesse Buckmann.jpg')
 
     
     
