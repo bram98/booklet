@@ -200,6 +200,7 @@ def manual_modify():
     set_entry('Xiang Yu', TYPE, 'PhD')
     set_entry_file('Jesse B', PORTRAIT, 'portrait 58 Jesse Buckmann.jpg')
     set_entry_file('Sepideh Hadidimasouleh', PROJ_DESCRIP, 'project_description 53 Sepideh Hadidimasouleh.doc;references 53 Sepideh Hadidimasouleh.xlsx')
+    set_entry_file('Nicolette Maaskant', FIGURE, 'figure 79 Nicolette Maaskant.pdf')
 
     '''
     CMI

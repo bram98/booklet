@@ -43,8 +43,8 @@ for i, row in df.iterrows():
         first_group = groups[0].split('(')[0].strip()
         group_abbr = group_regex.search(row["Research Group"]).group(1)
         
-        # if not 'NP' in group_abbr:
-        #     continue
+        if not 'ICC' in group_abbr:
+            continue
         
         full_name = row['Full Name'].strip().split()
         id_and_name = f'{row["ID"]} {unidecode(row["Full Name"])}'
@@ -75,6 +75,9 @@ for i, row in df.iterrows():
         project_title_str = detect_nan(row['Project Title'])
         full_name_str = re.sub('dr\.?\s?', '', row['Full Name'], flags=re.IGNORECASE)
         sponsor_str = detect_nan(row['Sponsor(s)'], default='-')
+        supervisor_str = row['Supervisor(s)']
+        supervisor_str = re.sub('(prof\.|dr\.|ir\.)', lambda s: s.groups(1)[0].lower(), supervisor_str, flags=re.IGNORECASE)
+
         # project_title_str =  if not row['Project Title'] is np.nan else ''
         # sponsor_str = row['Sponsor(s)'] if not row['Sponsor(s)'] is np.nan else '-'
         keyword_str = titlecase(detect_nan(row['Keywords']))
@@ -84,7 +87,7 @@ for i, row in df.iterrows():
 | {full_name_str} ({row['Project Type']}), {row['E-mail']}
 
 | Sponsor:{tab*2}{sponsor_str}
-| Supervisor(s):{tab}{row['Supervisor(s)']}{daily_str}
+| Supervisor(s):{tab}{supervisor_str}{daily_str}
 | Keyword(s):{tab*2}{keyword_str}
 
 """
