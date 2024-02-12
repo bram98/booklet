@@ -144,15 +144,19 @@ def cite_replace_sb(match: re.Match):
     '''
     global cite_counter, cite_dict   
     
-    citation_name = match.groups(0)[0]
-    if citation_name in cite_dict:
-        result = cite_dict[citation_name]
-        return f'[{result}]'
-    else:
-        cite_counter += 1   
-        cite_dict[citation_name] = cite_counter
-        return f'[{cite_counter}]'
-    
+    citation_names = match.groups(0)[0]
+    citation_names = citation_names.split(',')
+    citation_names = [c.strip() for c in citation_names]
+    result = ''
+    for citation_name in citation_names:
+        if not citation_name in cite_dict:
+            cite_counter += 1   
+            cite_dict[citation_name] = cite_counter
+            # return f'[{cite_counter}]'
+        result += ',' + str(cite_dict[citation_name])
+    result = result[1:]
+    print(result)
+    return f'[{result}]'
 
 def cite_replace_ref(match: re.Match):
     global cite_counter
@@ -175,6 +179,7 @@ def replace_cite_names_by_number(bib_file: str, text: str) -> tuple[str, list[st
     cite_counter = 0
     for (citation, citation_number) in cite_dict.items():
         cite_counter = citation_number
+        print(citation)
         (content, hits) = re.subn(citation, cite_replace_ref, content)
         new_citations.append(f'ref{cite_counter}')
         if hits != 1:
@@ -254,7 +259,7 @@ for bib_path in bib_paths:
     numbers = np.array(list(filter(lambda x: x, numbers)), dtype=int)
     if len(numbers) == 0:
         cite_cites = cite_cite_regex.findall(paras)
-        print(cite_cites)
+        print(cite_cites, person)
         if len(cite_cites) > 0:
             citations = [citation for citation_list in cite_cites for citation in citation_list.split(',') ]
             
@@ -281,6 +286,7 @@ for bib_path in bib_paths:
     # print(paras)
     if 'Wang' in person:
         cit = citations
+        paras_ = paras
         # print(cite_cite_regex.findall(paras), paras)
     paras = re.sub(cite_sb_period_regex, r'.\1', paras)
     paras = re.sub(period_space_cite_regex, r'.\1', paras)

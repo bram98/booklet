@@ -32,7 +32,7 @@ def set_entry_file(name, column, new_value):
     global data
     
     # Sanity check
-    if not name in new_value:
+    if not unidecode(name) in new_value:
         raise Exception(f'Set_entry_file error: {name} not in {new_value}')
     
     if data['Full Name'].str.match( name ).sum() != 1:
@@ -46,6 +46,9 @@ def set_entry_file(name, column, new_value):
         
     files = new_value.split(';')
     files = [f'../manual_files/{research_groups[0]}/' + file for file in files]
+    for file in files:
+        if not os.path.isfile(file.replace('..', '.')):
+            raise Exception(f'Error at {name}. Could not find {file}')
     
     new_value = ';'.join(files)
     
@@ -169,6 +172,7 @@ def manual_modify():
     set_entry('Sander Vonk', TITLE, "Investigating Blinking in Colloidal Quantum Dots: Insights and Strategies for Controlled Emission") # created with Chat GPT
     set_entry('Sander Vonk', TYPE, 'PhD')
     set_entry('Rodolfo Subert', CAPTION, 'a)-b) Section and top view of a liquid crystal skyrmion in a system of hard banana particles. c) Hexagonal lattice of half skyrmions in a system of hard banana particles.')
+    set_entry_file('Roy Hoitink', PROJ_DESCRIP, 'project_description 57 Roy Hoitink.docx;references 57 Roy Hoitink.xlsx')
     
     
     '''
@@ -195,12 +199,20 @@ def manual_modify():
     set_entry('Xiang Yu', TITLE, 'Towards an atom-level design and understanding of heterogeneous catalysts for environmental remediations')
     set_entry('Xiang Yu', TYPE, 'PhD')
     set_entry_file('Jesse B', PORTRAIT, 'portrait 58 Jesse Buckmann.jpg')
+    set_entry_file('Sepideh Hadidimasouleh', PROJ_DESCRIP, 'project_description 53 Sepideh Hadidimasouleh.doc;references 53 Sepideh Hadidimasouleh.xlsx')
 
     '''
     CMI
     '''
     
-    set_entry_file('Jara Vliem', PROJ_DESCRIP, 'project_description 22 Jara Vliem.docx;references 22 Jara Vliem.docx')
+    # set_entry_file('Jara Vliem', PROJ_DESCRIP, 'project_description 22 Jara Vliem.docx;references 22 Jara Vliem.docx')
+    
+    
+    '''
+    NP
+    '''
+    set_entry_file('Itır Bakış', PROJ_DESCRIP, 'project_description 126 Itir Bakis Dogru Yuksel.docx;references 126 Itir Bakis Dogru Yuksel.docx')
+    
     
     
     data_path.replace(data_path.with_stem('responses_old'))
