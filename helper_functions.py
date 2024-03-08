@@ -96,6 +96,11 @@ def parse_id(filename: str) -> int:
     only_numbers = re.compile(r'\d+')
     return int(only_numbers.search(filename)[0])
 
+def group_abbr(group_name):
+    return re.compile('\((.+?)\)').search(group_name).groups(1)[0]
+
+
+
 def valid_citation_sequence(l:list):
     '''
     Assures list starts with 1 and contains only integers 1 <= x <= max(l).
