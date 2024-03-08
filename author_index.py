@@ -9,6 +9,8 @@ import numpy as np
 import pandas as pd
 from unidecode import unidecode
 import re
+import os
+os.chdir(os.path.dirname(__file__))
 
 #%%
 def is_single_letter(string):
