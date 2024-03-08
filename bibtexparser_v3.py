@@ -77,7 +77,8 @@ def short_names(children, context, role, max_names=1, **kwargs):
     formatted_names = [style.my_format_name(person, abbr=True) for person in persons[:max_names]]
 
     formatted_names = join(**kwargs) [ formatted_names ]
-    if len(persons) > max_names:
+    if len(persons) > max_names or True:
+        # always add et al., since in the forms many people gave just one name, while there are usually more than 1 authors.
         formatted_names = join [ formatted_names, ' ', tag('em') [ 'et al.' ] ]
         
     return formatted_names.format_data(context)

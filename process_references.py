@@ -237,6 +237,8 @@ cite_sb_regex = re.compile(r'(\[.*?\d.*?\])') # Matches [1] and [ 1 ]
 # cite_sb_regex2 = re.compile(r'\[.*?(\d+)\D*?(\d+)?.*?\]') # Matches [1], [1, 2] and [8-10]
 cite_sb_regex2 = re.compile(r'\[.*?(\d+)(?:(?:\D{1,3})?(\d+))*.*?\]') # Matches [1], [1, 2, 3] and [8-10]. Captures first and last number.
 cite_cite_regex = re.compile(r'\\cite\{(.+?)\}')
+
+cite_compound_period = re.compile(r'')
 for bib_path in bib_paths:
     bib_path = Path(bib_path)
     person = bib_path.stem[11:]
@@ -252,7 +254,7 @@ for bib_path in bib_paths:
     doc = Document(proj_description)
     # print( [len(p.text) for p in doc.paragraphs] )
     paras = '###'.join( [p.text for p in doc.paragraphs] )
-    
+
     # Find all citations of the type [1]
     numbers = cite_sb_regex2.findall(paras)
     numbers = np.array(numbers, dtype=str).flatten()
@@ -280,14 +282,14 @@ for bib_path in bib_paths:
     # print(citations)
     citations = [citation.strip() for citation in citations]
     
+    
     cite_sb_period_regex = re.compile(r'\ ?(\[.*?\d+\D*?(\d+)?\])\.')
     period_space_cite_regex = re.compile(r'\.\ (\[.*?\d+\D*?(\d+)?\])')
     # print()
     # print(paras)
-    if 'Wang' in person:
-        cit = citations
-        paras_ = paras
-        # print(cite_cite_regex.findall(paras), paras)
+    # if 'Suzan' in person:
+    #     print(citations, 'suz')
+    #     print(paras)
     paras = re.sub(cite_sb_period_regex, r'.\1', paras)
     paras = re.sub(period_space_cite_regex, r'.\1', paras)
     

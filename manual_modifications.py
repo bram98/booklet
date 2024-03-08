@@ -156,7 +156,7 @@ def manual_modify():
     '''
     SCMB
     '''
-    set_entry_file('Susana', 'Project Description', 'project_description 84 Susana Marin Aguilar.docx')
+    set_entry_file('Susana', 'Project Description', 'project_description 84 Susana Marin Aguilar.docx;references 84 Susana Marin Aguilar.xlsx')
     set_entry_file('Susana', 'Figure (optional)', 'figure 84 Susana Marin Aguilar.pdf')
     set_entry_file('Susana', 'Photo of yourself', 'portrait 84 Susana Marin Aguilar.tiff')
     set_entry('Susana', 'Project Title', 'Simulations of colloidal particles with anisotropic interactions and shapes')
@@ -173,6 +173,8 @@ def manual_modify():
     set_entry('Sander Vonk', TYPE, 'PhD')
     set_entry('Rodolfo Subert', CAPTION, 'a)-b) Section and top view of a liquid crystal skyrmion in a system of hard banana particles. c) Hexagonal lattice of half skyrmions in a system of hard banana particles.')
     set_entry_file('Roy Hoitink', PROJ_DESCRIP, 'project_description 57 Roy Hoitink.docx;references 57 Roy Hoitink.xlsx')
+    set_entry_file('Rodolfo Subert', PORTRAIT, 'portrait 52 Rodolfo Subert.jpg')
+    
     
     
     '''
@@ -201,7 +203,8 @@ def manual_modify():
     set_entry_file('Jesse B', PORTRAIT, 'portrait 58 Jesse Buckmann.jpg')
     set_entry_file('Sepideh Hadidimasouleh', PROJ_DESCRIP, 'project_description 53 Sepideh Hadidimasouleh.doc;references 53 Sepideh Hadidimasouleh.xlsx')
     set_entry_file('Nicolette Maaskant', FIGURE, 'figure 79 Nicolette Maaskant.pdf')
-
+    set_entry_file('Jim de Ruiter', PROJ_DESCRIP, 'project_description 32 Jim de Ruiter.docx;references 32 Jim de Ruiter.xlsx')
+ 
     '''
     CMI
     '''

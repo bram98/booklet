@@ -43,7 +43,7 @@ for i, row in df.iterrows():
         first_group = groups[0].split('(')[0].strip()
         group_abbr = group_regex.search(row["Research Group"]).group(1)
         
-        if not 'ICC' in group_abbr:
+        if not 'MCC' in group_abbr:
             continue
         
         full_name = row['Full Name'].strip().split()
